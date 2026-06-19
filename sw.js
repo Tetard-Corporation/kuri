@@ -1,5 +1,5 @@
 // Service worker — offline-first app shell caching.
-const VERSION = 'hostel-v1';
+const VERSION = 'hostel-v2';
 const CORE = [
   './',
   './index.html',
@@ -14,6 +14,7 @@ const CORE = [
   './js/ui.js',
   './js/parse.js',
   './js/import.js',
+  './js/backup.js',
   './js/views/recipes.js',
   './js/views/recipe.js',
   './js/views/edit.js',

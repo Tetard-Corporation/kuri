@@ -4,6 +4,7 @@ import { navigate } from '../router.js';
 import { importFromUrl, ocrImage } from '../import.js';
 import { parseRecipeText, ingredientToString } from '../parse.js';
 import { store, blankRecipe } from '../store.js';
+import { exportData } from '../backup.js';
 
 export async function importView(_params, root) {
   setTopbar({ title: 'Import' });
@@ -171,16 +172,4 @@ function backupSection() {
       fileInput
     ])
   ]);
-}
-
-async function exportData() {
-  const data = await store.exportAll();
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = h('a', { href: url, download: `hostel-recipes-${new Date().toISOString().slice(0, 10)}.json` });
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-  toast('Backup exported');
 }

@@ -337,3 +337,27 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent-soft
   border: none; font-size: 1.8rem; box-shadow: var(--shadow); cursor: pointer; z-index: 30;
   display: flex; align-items: center; justify-content: center;
 }
+
+/* Floating "back up your recipes" reminder */
+.backup-nudge {
+  position: fixed; right: 12px; left: 12px; max-width: 360px; margin-left: auto;
+  bottom: calc(var(--tabbar-h) + 14px + env(safe-area-inset-bottom));
+  z-index: 35; display: flex; align-items: stretch;
+  background: var(--surface); border: 1px solid var(--accent);
+  border-radius: 16px; box-shadow: var(--shadow); overflow: hidden;
+  animation: nudgeIn 0.3s ease;
+}
+.backup-nudge__main {
+  display: flex; align-items: center; gap: 10px; flex: 1;
+  border: none; background: none; color: var(--text);
+  padding: 12px 8px 12px 14px; cursor: pointer; font: inherit; text-align: left;
+}
+.backup-nudge__icon { font-size: 1.5rem; flex: none; }
+.backup-nudge strong { font-size: 0.9rem; display: block; }
+.backup-nudge__sub { font-size: 0.74rem; color: var(--muted); margin-top: 1px; }
+.backup-nudge__close {
+  border: none; background: none; color: var(--muted);
+  font-size: 1.4rem; line-height: 1; padding: 0 14px; cursor: pointer;
+  border-left: 1px solid var(--border);
+}
+@keyframes nudgeIn { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
