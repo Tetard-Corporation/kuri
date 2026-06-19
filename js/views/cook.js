@@ -37,16 +37,25 @@ export async function cookView({ id }, root) {
   ]);
   root.append(overlay);
 
-  // Show ingredients only on the first step as a quick reference.
-  ingsBox.append(
-    h('h2', { style: 'margin-top:0;font-size:0.95rem' }, 'Ingredients'),
-    h('ul', { class: 'ing-list' }, (r.ingredients || []).map((ing) =>
-      h('li', {}, [
+  // Show ingredients only on the first step as a quick reference (grouped by section).
+  ingsBox.append(h('h2', { style: 'margin-top:0;font-size:0.95rem' }, 'Ingredients'));
+  {
+    let current = null;
+    let list = null;
+    (r.ingredients || []).forEach((ing) => {
+      const sec = ing.section || '';
+      if (sec !== current || !list) {
+        if (sec) ingsBox.append(h('div', { class: 'ing-group' }, sec));
+        list = h('ul', { class: 'ing-list' });
+        ingsBox.append(list);
+        current = sec;
+      }
+      list.append(h('li', {}, [
         h('span', { class: 'ing-qty' }, [ing.qty != null ? formatQty(ing.qty) : '', ing.unit].filter(Boolean).join(' ')),
         h('span', { class: 'grow' }, ing.name)
-      ])
-    ))
-  );
+      ]));
+    });
+  }
 
   function render() {
     stepNum.textContent = `Step ${i + 1} of ${steps.length}`;

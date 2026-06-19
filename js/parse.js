@@ -107,13 +107,62 @@ export function parseIngredient(raw) {
 }
 
 export function parseIngredientList(text) {
-  return String(text)
-    .split('\n')
-    .map((l) => l.trim())
-    .filter(Boolean)
-    .map((l) => l.replace(/^[-*•·–]\s*/, ''))
-    .map(parseIngredient)
-    .filter(Boolean);
+  return linesToIngredients(String(text).split('\n'));
+}
+
+// Convert raw lines (ingredients possibly interleaved with sub-section headers
+// like "Pour la sauce", "For the meat", "# Sauce") into ingredient objects,
+// tagging each with the current `section`.
+export function linesToIngredients(lines) {
+  const out = [];
+  let section = '';
+  for (const raw of lines) {
+    let line = String(raw).replace(/\*\*/g, '').trim();
+    if (!line) continue;
+    line = line.replace(/^[-*•·–]\s*/, '').trim();
+    const header = sectionHeaderName(line);
+    if (header) { section = header; continue; }
+    const ing = parseIngredient(line);
+    if (!ing) continue;
+    if (section) ing.section = section;
+    out.push(ing);
+  }
+  return out;
+}
+
+// Recognize a line that introduces an ingredient sub-group; returns its name or null.
+export function sectionHeaderName(line) {
+  const l = line.trim();
+  if (!l) return null;
+  let m = l.match(/^#{1,6}\s*(.+?)\s*$/);                                  // "## Sauce"
+  if (m) return tidySection(m[1]);
+  m = l.match(/^(?:pour|for)\s+(?:la|le|les|l['’]|the)\s+(.+?)\s*:?\s*$/i); // "Pour la sauce"
+  if (m) return tidySection(m[1]);
+  m = l.match(/^(.{2,40}?)\s*:\s*$/);                                       // "Sauce:" / "Marinade :"
+  if (m && !/^\d/.test(l) && !/[½⅓⅔¼¾]/.test(l) && m[1].split(/\s+/).length <= 5) {
+    return tidySection(m[1]);
+  }
+  return null;
+}
+
+function tidySection(s) {
+  const cleaned = String(s).replace(/^(la|le|les|l['’]|the|du|de la|des)\s+/i, '').trim();
+  return cleaned ? cleaned.charAt(0).toUpperCase() + cleaned.slice(1) : '';
+}
+
+// Serialize grouped ingredients back to editable text, emitting "# Section" headers.
+export function ingredientsToText(ingredients) {
+  const lines = [];
+  let current = null;
+  for (const ing of ingredients || []) {
+    const sec = ing.section || '';
+    if (sec !== current) {
+      if (sec) { if (lines.length) lines.push(''); lines.push('# ' + sec); }
+      current = sec;
+    }
+    lines.push(ingredientToString(ing));
+  }
+  return lines.join('\n');
 }
 
 export function ingredientToString(ing) {
@@ -143,15 +192,14 @@ export function parseRecipeText(text) {
   const nonEmpty = lines.map((l) => l.trim()).filter(Boolean);
   const title = nonEmpty[0] || 'Untitled recipe';
 
-  // Section headers (English + French).
-  const ingHeader = /^(ingredients?|shopping list|you will need|what you need|ingr[ée]dients?|pour la (recette|sauce|garniture|p[âa]te))\b/i;
+  // Main section headers (English + French).
+  const ingHeader = /^(ingredients?|shopping list|you will need|what you need|ingr[ée]dients?)\b/i;
   const stepHeader = /^(instructions?|directions?|method|steps?|preparation|how to|to make|pr[ée]paration|r[ée]alisation|[ée]tapes?|recette|montage)\b/i;
 
   let mode = 'pre';
-  const ingredients = [];
+  const ingLines = []; // raw ingredient lines, including sub-group headers
   const steps = [];
   const cleanStep = (l) => l.replace(/^(\d+[.)]\s*|[-*•·–]\s*)/, '').trim();
-  const cleanIng = (l) => l.replace(/^[-*•·–]\s*/, '').trim();
 
   for (let idx = 0; idx < lines.length; idx++) {
     const line = lines[idx].trim();
@@ -159,23 +207,23 @@ export function parseRecipeText(text) {
     if (ingHeader.test(line)) { mode = 'ing'; continue; }
     if (stepHeader.test(line)) { mode = 'step'; continue; }
 
-    if (mode === 'ing') ingredients.push(cleanIng(line));
+    if (mode === 'ing') ingLines.push(line);
     else if (mode === 'step') steps.push(cleanStep(line));
   }
 
   // No headers found: guess by line shape, skipping obvious social-media noise.
-  if (mode === 'pre' || (ingredients.length === 0 && steps.length === 0)) {
+  if (mode === 'pre' || (ingLines.length === 0 && steps.length === 0)) {
     for (let idx = 1; idx < nonEmpty.length; idx++) {
       const line = nonEmpty[idx];
       if (isNoise(line)) continue;
-      if (looksLikeIngredient(line)) ingredients.push(cleanIng(line));
+      if (sectionHeaderName(line) || looksLikeIngredient(line)) ingLines.push(line);
       else steps.push(cleanStep(line));
     }
   }
 
   return {
     title,
-    ingredients: ingredients.map(parseIngredient).filter(Boolean),
+    ingredients: linesToIngredients(ingLines),
     steps: steps.filter((s) => s.length > 1)
   };
 }
