@@ -1,4 +1,6 @@
 // Minimal IndexedDB wrapper. Stores: recipes, lists, meta.
+// Note: the database name is kept stable (not renamed with the app) so existing
+// users keep the recipes already saved on their device. It is never shown in the UI.
 const DB_NAME = 'hostel';
 const DB_VERSION = 1;
 let dbPromise = null;

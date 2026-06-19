@@ -19,7 +19,7 @@ export async function exportData() {
   const data = await store.exportAll();
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
-  const a = h('a', { href: url, download: `hostel-recipes-${new Date().toISOString().slice(0, 10)}.json` });
+  const a = h('a', { href: url, download: `kuri-recipes-${new Date().toISOString().slice(0, 10)}.json` });
   document.body.append(a);
   a.click();
   a.remove();

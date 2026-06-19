@@ -1,6 +1,6 @@
 {
-  "name": "Hostel — Recipes",
-  "short_name": "Hostel",
+  "name": "Kuri — Recipes",
+  "short_name": "Kuri",
   "description": "Offline-first recipe keeper: store, cook, organize and shop.",
   "start_url": "./",
   "scope": "./",
