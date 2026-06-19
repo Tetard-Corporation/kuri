@@ -1,0 +1,25 @@
+{
+  "name": "Hostel — Recipes",
+  "short_name": "Hostel",
+  "description": "Offline-first recipe keeper: store, cook, organize and shop.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fffaf6",
+  "theme_color": "#e8553a",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
