@@ -78,98 +78,104 @@ export function blankRecipe() {
   };
 }
 
-export async function seedIfEmpty() {
-  const seeded = await store.getMeta('seeded');
-  const existing = await db.getAll('recipes');
-  if (seeded || existing.length) return;
+// Default recipes shipped with the app. Bump SEED_VERSION when this list changes.
+const SEED_VERSION = 2;
 
-  const samples = [
-    {
-      title: 'Spaghetti Aglio e Olio',
-      emoji: '🍝',
-      description: 'The classic 15-minute Italian pasta — pantry magic.',
-      servings: 2,
-      prepTime: '5 min',
-      cookTime: '15 min',
-      tags: ['pasta', 'vegetarian', 'quick'],
-      ingredients: [
-        '200 g spaghetti',
-        '4 cloves garlic',
-        '6 tbsp olive oil',
-        '1 tsp chili flakes',
-        '1 handful parsley',
-        'salt to taste'
-      ],
-      steps: [
-        'Boil the spaghetti in well-salted water until al dente.',
-        'Meanwhile, gently fry thinly sliced garlic and chili flakes in olive oil until golden.',
-        'Drain pasta, reserving a splash of cooking water.',
-        'Toss pasta in the oil with a little pasta water until glossy.',
-        'Finish with chopped parsley and serve immediately.'
-      ]
-    },
-    {
-      title: 'Fluffy Pancakes',
-      emoji: '🥞',
-      description: 'Soft, tall breakfast pancakes from one bowl.',
-      servings: 4,
-      prepTime: '10 min',
-      cookTime: '15 min',
-      tags: ['breakfast', 'sweet'],
-      ingredients: [
-        '2 cups flour',
-        '2 tbsp sugar',
-        '1 tbsp baking powder',
-        '1/2 tsp salt',
-        '2 eggs',
-        '1.5 cups milk',
-        '3 tbsp butter'
-      ],
-      steps: [
-        'Whisk the dry ingredients together in a bowl.',
-        'Add eggs, milk and melted butter; stir until just combined.',
-        'Heat a non-stick pan over medium heat.',
-        'Pour batter and cook until bubbles form, then flip.',
-        'Serve warm with maple syrup.'
-      ]
-    },
-    {
-      title: 'Chickpea Coconut Curry',
-      emoji: '🍛',
-      description: 'Cozy, creamy vegan curry ready in half an hour.',
-      servings: 3,
-      prepTime: '10 min',
-      cookTime: '20 min',
-      tags: ['vegan', 'dinner', 'curry'],
-      ingredients: [
-        '1 onion',
-        '3 cloves garlic',
-        '1 tbsp ginger',
-        '2 tbsp curry powder',
-        '1 can chickpeas',
-        '1 can coconut milk',
-        '1 can chopped tomatoes',
-        '2 cups spinach',
-        '2 tbsp oil'
-      ],
-      steps: [
-        'Soften diced onion in oil, then add garlic and ginger.',
-        'Stir in curry powder and cook for a minute until fragrant.',
-        'Add tomatoes, chickpeas and coconut milk; simmer 15 minutes.',
-        'Stir through spinach until wilted.',
-        'Season and serve over rice.'
-      ]
-    }
-  ];
+const DEFAULT_RECIPES = [
+  {
+    title: 'Sauce bolognaise aux protéines de soja texturées',
+    emoji: '🍝',
+    description: 'Une bolognaise vegan et sans gluten, riche et parfaite à préparer en grande quantité.',
+    servings: 4,
+    prepTime: '30 min',
+    cookTime: '50 min',
+    tags: ['vegan', 'sans gluten', 'pâtes', 'batch cooking'],
+    ingredients: [
+      '# Pour les protéines de soja',
+      '175 g protéines de soja texturées',
+      '40 cl eau bouillante',
+      '6 c-à-s sauce soja tamari',
+      '# Pour la sauce',
+      '250 g carottes',
+      '80 g céleri branche',
+      '150 g oignons',
+      '2 gousses ail',
+      "6 c-à-s huile d'olive",
+      '20 cl vin rouge',
+      '3 feuilles de laurier',
+      '10 branches de thym',
+      "1 c-à-s origan",
+      '800 g tomates concassées en conserve',
+      '70 g concentré de tomate',
+      '5 c-à-s eau',
+      '1 c-à-c sucre',
+      '1 gousse ail',
+      'sel, poivre'
+    ],
+    steps: [
+      "Mettez les protéines de soja texturées dans un bol avec l'eau bouillante et la sauce soja, couvrez. Laissez gonfler au minimum 15 min en remuant de temps en temps.",
+      'Pendant ce temps, épluchez les légumes (carottes, oignon, ail, céleri) et passez-les au mixeur pour obtenir de petits dés.',
+      "Faites chauffer l'huile d'olive dans une grande poêle à feu moyen et faites revenir les légumes une dizaine de minutes.",
+      "Ajoutez le vin rouge et laissez cuire 3-4 min jusqu'à évaporation.",
+      'Ajoutez les herbes et faites revenir encore 2-3 min.',
+      "Ajoutez les protéines de soja avec l'eau et la sauce soja restantes, et faites revenir jusqu'à absorption (environ 10 min).",
+      "Ajoutez la sauce tomate, le concentré de tomate, l'eau, la gousse d'ail pressée et le sucre. Mélangez et laissez mijoter 30 min en remuant de temps en temps.",
+      'Servez avec les pâtes de votre choix.'
+    ],
+    source: { type: 'url', url: 'https://freethepickle.fr/2020/02/02/sauce-bolognaise-aux-proteines-de-soja-texturees-vegan-sans-gluten/' }
+  },
+  {
+    title: 'Scarpaccia',
+    emoji: '🥒',
+    description: 'La version simplifiée de Simon Auscher : une fine tarte salée aux courgettes et parmesan.',
+    servings: 6,
+    prepTime: '20 min',
+    cookTime: '40 min',
+    tags: ['italien', 'courgette', 'végétarien', 'four'],
+    ingredients: [
+      '700 g courgettes',
+      '160 g farine',
+      '2 oeufs',
+      '100 g parmesan',
+      "huile d'olive",
+      '1 gousse ail',
+      'sel, poivre'
+    ],
+    steps: [
+      'Coupez les courgettes en rondelles très fines et salez-les. Attendez 15 minutes qu’elles dégorgent.',
+      "Mélangez les oeufs, la farine et l'ail.",
+      "Pressez les courgettes en gardant l'eau de végétation, puis ajoutez-les à la préparation et mélangez. La pâte doit être épaisse mais malléable.",
+      "Si besoin, ajoutez un peu d'eau de végétation pour la détendre.",
+      'Huilez un moule de 30 cm de diamètre et râpez la moitié du parmesan dedans.',
+      'Ajoutez les courgettes et étalez en couche très fine.',
+      "Ajoutez à nouveau du parmesan et un filet d'huile d'olive.",
+      'Enfournez 40 minutes à 200°C.'
+    ],
+    source: { type: 'url', url: 'https://www.instagram.com/simonauscher/reel/DZevuknMl6n/' }
+  }
+];
+
+// Seed the default recipes on first run, and refresh them when SEED_VERSION
+// changes. Only previously shipped defaults are replaced — the user's own
+// recipes (and any default they deleted) are left untouched.
+export async function seedIfEmpty() {
+  const current = (await store.getMeta('seedVersion'))?.value || 0;
+  if (current >= SEED_VERSION) return;
+
+  const existing = await db.getAll('recipes');
+  for (const r of existing) {
+    // r.seed: our newer defaults; source.type 'sample': the original generic samples.
+    if (r.seed === true || r.source?.type === 'sample') await store.deleteRecipe(r.id);
+  }
 
   const { parseIngredientList } = await import('./parse.js');
-  for (const s of samples) {
+  for (const r of DEFAULT_RECIPES) {
     await store.saveRecipe({
       ...blankRecipe(),
-      ...s,
-      ingredients: parseIngredientList(s.ingredients.join('\n')),
-      source: { type: 'sample' }
+      ...r,
+      ingredients: parseIngredientList(r.ingredients.join('\n')),
+      seed: true
     });
   }
-  await store.setMeta('seeded', true);
+  await store.setMeta('seedVersion', SEED_VERSION);
 }
