@@ -1,43 +1,118 @@
 // Import recipes from URLs (schema.org JSON-LD), text, and photos (OCR).
 import { parseRecipeText, parseIngredient } from './parse.js';
 
-// CORS proxies tried in order; static-site browsers can't fetch cross-origin HTML directly.
-const PROXIES = [
-  (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-  (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
-  (u) => `https://r.jina.ai/${u}` // returns readable text/markdown
-];
+// Static-site browsers can't fetch cross-origin HTML directly (CORS), so we go
+// through public read-only proxies. Jina (r.jina.ai) is reliable and CORS-enabled:
+// in HTML mode it preserves the page's schema.org data; its default markdown mode
+// is great for social posts (the caption lands in the "Title:" field).
 
-async function fetchThrough(url) {
-  let lastErr;
-  for (const make of PROXIES) {
-    try {
-      const res = await fetch(make(url), { headers: { Accept: 'text/html,*/*' } });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const text = await res.text();
-      if (text && text.length > 50) return text;
-    } catch (err) {
-      lastErr = err;
-    }
-  }
-  throw lastErr || new Error('Could not reach the page.');
+async function fetchVia(url, opts) {
+  const res = await fetch(url, opts);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const text = await res.text();
+  if (!text || text.length < 40) throw new Error('Empty response');
+  return text;
 }
 
-// Pull recipe from a web page URL.
-export async function importFromUrl(url) {
-  const body = await fetchThrough(url);
-  // Prefer structured schema.org Recipe data when the page provides it.
-  const recipe = extractFromHtml(body);
-  if (recipe && (recipe.ingredients.length || recipe.steps.length)) {
-    recipe.source = { type: 'url', url };
-    return recipe;
+// Fetch the page HTML (for structured-data extraction).
+async function fetchHtml(url) {
+  const attempts = [
+    () => fetchVia(`https://r.jina.ai/${url}`, { headers: { 'X-Return-Format': 'html' } }),
+    () => fetchVia(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`),
+    () => fetchVia(`https://corsproxy.io/?url=${encodeURIComponent(url)}`)
+  ];
+  for (const attempt of attempts) {
+    try { return await attempt(); } catch { /* try next */ }
   }
-  // Fallback: treat as readable text (handles r.jina.ai output and plain pages).
-  const looksHtml = /<\/?[a-z][\s\S]*>/i.test(body);
-  const text = looksHtml ? stripHtml(body) : body;
-  const parsed = parseRecipeText(text);
-  parsed.source = { type: 'url', url };
-  return parsed;
+  return null;
+}
+
+// Fetch readable markdown (Jina's reader view) — best for pages without structured data.
+async function fetchReadable(url) {
+  try { return await fetchVia(`https://r.jina.ai/${url}`); } catch { return null; }
+}
+
+// Pull a recipe from a web page URL, trying the most accurate source first.
+export async function importFromUrl(url) {
+  const src = { type: 'url', url };
+
+  // 1) Structured schema.org/Recipe data (most accurate).
+  const html = await fetchHtml(url);
+  if (html) {
+    const recipe = extractFromHtml(html);
+    if (recipe && (recipe.ingredients.length || recipe.steps.length)) {
+      recipe.source = src;
+      return recipe;
+    }
+    // 1b) Some sites put the whole recipe in the og:description meta tag.
+    const metaText = extractMetaText(html);
+    if (metaText && metaText.length > 120) {
+      const parsed = parseRecipeText(metaText);
+      if (parsed.ingredients.length || parsed.steps.length) { parsed.source = src; return parsed; }
+    }
+  }
+
+  // 2) Readable markdown fallback (handles social posts like Instagram).
+  const md = await fetchReadable(url);
+  if (md) {
+    const { title, body } = parseJinaMarkdown(md);
+    // Prefer the article body; if it's empty/junk (e.g. a login wall), fall back to
+    // the title — for social posts the full caption lives there.
+    const fromBody = parseRecipeText((title ? title + '\n' : '') + body);
+    const fromCaption = title ? parseRecipeText(captionFromTitle(title)) : fromBody;
+    // Ingredient count is the reliable signal — a login wall inflates step count with
+    // junk but adds no ingredients. Prefer the caption (cleaner title) when it ties.
+    const ings = (p) => p.ingredients.length;
+    const best = (ings(fromCaption) > 0 && ings(fromCaption) >= ings(fromBody)) ? fromCaption : fromBody;
+    best.title = cleanSocialTitle(best.title);
+    best.steps = best.steps.map((s) => s.replace(/^["“]+|["”]+$/g, '').trim()).filter(Boolean);
+    best.source = src;
+    return best;
+  }
+
+  throw new Error('Could not reach the page.');
+}
+
+// Read the recipe-bearing meta tags from page HTML.
+function extractMetaText(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const pick = (sel) => doc.querySelector(sel)?.getAttribute('content') || '';
+  const candidates = [
+    pick('meta[property="og:description"]'),
+    pick('meta[name="description"]'),
+    pick('meta[name="twitter:description"]')
+  ].map((s) => s.trim());
+  return candidates.sort((a, b) => b.length - a.length)[0] || '';
+}
+
+// Jina's markdown output starts with "Title: …", "URL Source: …", then "Markdown Content:".
+function parseJinaMarkdown(md) {
+  const titleMatch = md.match(/^Title:\s*([\s\S]*?)\n(?:URL Source:|Published Time:|Markdown Content:)/m);
+  const title = titleMatch ? titleMatch[1].trim() : '';
+  const idx = md.indexOf('Markdown Content:');
+  let body = idx >= 0 ? md.slice(idx + 'Markdown Content:'.length) : md;
+  body = body
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')        // images
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')      // links -> text
+    .replace(/^={3,}|^-{3,}|^#{1,6}\s*/gm, '');   // heading/rule markers
+  return { title, body };
+}
+
+// For social posts Jina's title is like: `Author on Instagram: "<caption>"`.
+// The caption (the actual recipe) sits between the first and last quote.
+function captionFromTitle(title) {
+  const m = title.match(/["“]([\s\S]+)["”]/);
+  return (m ? m[1] : title).trim();
+}
+
+// Strip a leading social-stats prefix and surrounding quotes from a title, e.g.
+// `12K likes, 81 comments - user on June 12, 2026: "Scarpaccia` -> `Scarpaccia`.
+function cleanSocialTitle(title) {
+  return String(title)
+    .split('\n')[0]
+    .replace(/^[\d.,]+\s*[KkMm]?\s*(likes?|j’aime|j'aime).*?:\s*/i, '')
+    .replace(/^["“]+|["”]+$/g, '')
+    .trim() || 'Imported recipe';
 }
 
 export function extractFromHtml(html) {

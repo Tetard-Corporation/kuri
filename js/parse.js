@@ -23,7 +23,19 @@ const UNITS = {
   piece: 'piece', pieces: 'piece',
   pkg: 'pkg', package: 'pkg', packages: 'pkg',
   handful: 'handful', stick: 'stick', sticks: 'stick',
-  bunch: 'bunch', bunches: 'bunch', dash: 'dash'
+  bunch: 'bunch', bunches: 'bunch', dash: 'dash',
+  // Metric / French
+  cl: 'cl',
+  'c-à-s': 'tbsp', 'càs': 'tbsp', 'c.à.s': 'tbsp', cas: 'tbsp', 'càd': 'tbsp',
+  'c-à-c': 'tsp', 'càc': 'tsp', 'c.à.c': 'tsp', cac: 'tsp',
+  cuillère: 'tbsp', cuillères: 'tbsp', 'cuiller': 'tbsp',
+  gousse: 'clove', gousses: 'clove',
+  pincée: 'pinch', pincées: 'pinch',
+  sachet: 'pkg', sachets: 'pkg',
+  tranche: 'slice', tranches: 'slice',
+  morceau: 'piece', morceaux: 'piece',
+  boîte: 'can', boîtes: 'can', boite: 'can', boites: 'can',
+  poignée: 'handful', botte: 'bunch'
 };
 
 function parseQtyToken(token) {
@@ -48,7 +60,10 @@ function parseQtyToken(token) {
 
 // Parse a single ingredient line into { raw, qty, unit, name }.
 export function parseIngredient(raw) {
-  const line = String(raw).trim().replace(/\s+/g, ' ');
+  const line = String(raw).trim()
+    // Split a quantity glued to its unit: "700gr" -> "700 gr", "30cl" -> "30 cl".
+    .replace(/(\d)(gr|g|kg|mg|ml|cl|l|oz|lb|tbsp|tsp)\b/gi, '$1 $2')
+    .replace(/\s+/g, ' ');
   if (!line) return null;
   const tokens = line.split(' ');
   let qty = null;
@@ -84,8 +99,8 @@ export function parseIngredient(raw) {
   }
 
   let name = tokens.slice(i).join(' ').trim();
-  // Strip leading "of"
-  name = name.replace(/^of\s+/i, '');
+  // Strip a leading "of" / French "de, d', du, des" (d' may attach to the word).
+  name = name.replace(/^d['’]\s*/i, '').replace(/^(of|de|du|des)\s+/i, '');
   if (!name) name = line; // fallback: whole line is the name
 
   return { raw: line, qty, unit, name };
@@ -128,12 +143,15 @@ export function parseRecipeText(text) {
   const nonEmpty = lines.map((l) => l.trim()).filter(Boolean);
   const title = nonEmpty[0] || 'Untitled recipe';
 
-  const ingHeader = /^(ingredients?|shopping list|you will need|what you need)\b/i;
-  const stepHeader = /^(instructions?|directions?|method|steps?|preparation|how to|to make)\b/i;
+  // Section headers (English + French).
+  const ingHeader = /^(ingredients?|shopping list|you will need|what you need|ingr[ée]dients?|pour la (recette|sauce|garniture|p[âa]te))\b/i;
+  const stepHeader = /^(instructions?|directions?|method|steps?|preparation|how to|to make|pr[ée]paration|r[ée]alisation|[ée]tapes?|recette|montage)\b/i;
 
   let mode = 'pre';
   const ingredients = [];
   const steps = [];
+  const cleanStep = (l) => l.replace(/^(\d+[.)]\s*|[-*•·–]\s*)/, '').trim();
+  const cleanIng = (l) => l.replace(/^[-*•·–]\s*/, '').trim();
 
   for (let idx = 0; idx < lines.length; idx++) {
     const line = lines[idx].trim();
@@ -141,19 +159,17 @@ export function parseRecipeText(text) {
     if (ingHeader.test(line)) { mode = 'ing'; continue; }
     if (stepHeader.test(line)) { mode = 'step'; continue; }
 
-    if (mode === 'ing') {
-      ingredients.push(line.replace(/^[-*•·–]\s*/, ''));
-    } else if (mode === 'step') {
-      steps.push(line.replace(/^(\d+[.)]\s*|[-*•·–]\s*)/, ''));
-    }
+    if (mode === 'ing') ingredients.push(cleanIng(line));
+    else if (mode === 'step') steps.push(cleanStep(line));
   }
 
-  // No headers found: guess by line shape.
+  // No headers found: guess by line shape, skipping obvious social-media noise.
   if (mode === 'pre' || (ingredients.length === 0 && steps.length === 0)) {
     for (let idx = 1; idx < nonEmpty.length; idx++) {
       const line = nonEmpty[idx];
-      if (looksLikeIngredient(line)) ingredients.push(line.replace(/^[-*•·–]\s*/, ''));
-      else steps.push(line.replace(/^(\d+[.)]\s*|[-*•·–]\s*)/, ''));
+      if (isNoise(line)) continue;
+      if (looksLikeIngredient(line)) ingredients.push(cleanIng(line));
+      else steps.push(cleanStep(line));
     }
   }
 
@@ -165,12 +181,18 @@ export function parseRecipeText(text) {
 }
 
 function looksLikeIngredient(line) {
-  if (line.length > 90) return false;
-  if (/^\d/.test(line)) return true;
+  if (line.length > 100) return false;
+  if (/^\d/.test(line)) return true;                 // "2 oeufs", "700gr de courgettes"
   if (/[½⅓⅔¼¾]/.test(line)) return true;
   const words = line.toLowerCase().split(/\s+/);
-  if (words.some((w) => UNITS[w.replace(/\.$/, '')])) return true;
+  if (words.some((w) => UNITS[w.replace(/[.,]$/, '')])) return true;
   return false;
+}
+
+// Lines that are clearly captions/social chatter rather than recipe content.
+function isNoise(line) {
+  return /\b(like[rz]?|abonne|partage|comment(aire)?s?|lien en bio|recipe in comments|recette en commentaire|follow|swipe|#\w+|@\w+)\b/i
+    .test(line) || /^#\w/.test(line) || /^@\w/.test(line);
 }
 
 // Aggregate ingredients across recipes into a merged shopping list.
