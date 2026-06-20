@@ -90,7 +90,17 @@ export function parseIngredient(raw) {
   }
 
   let unit = null;
+  // Multi-word French spoon units: "c. à soupe", "cuil. à café", "cuillères à soupe".
   if (tokens[i]) {
+    const t0 = tokens[i].toLowerCase().replace(/\.$/, '');
+    const t1 = (tokens[i + 1] || '').toLowerCase();
+    const t2 = (tokens[i + 2] || '').toLowerCase().replace(/\.$/, '');
+    if (/^(c|cuil|cuiller|cuillère|cuillere|cuillères|cuilleres|cuillerée|cuillerées)$/.test(t0) && /^[àa]$/.test(t1)) {
+      if (/^(soupe|s)$/.test(t2)) { unit = 'tbsp'; i += 3; }
+      else if (/^(café|cafe|c)$/.test(t2)) { unit = 'tsp'; i += 3; }
+    }
+  }
+  if (unit === null && tokens[i]) {
     const cleaned = tokens[i].toLowerCase().replace(/\.$/, '');
     if (UNITS[cleaned]) {
       unit = UNITS[cleaned];
@@ -117,17 +127,46 @@ export function linesToIngredients(lines) {
   const out = [];
   let section = '';
   for (const raw of lines) {
-    let line = String(raw).replace(/\*\*/g, '').trim();
+    let line = stripLead(String(raw).replace(/\*\*/g, ''));
     if (!line) continue;
-    line = line.replace(/^[-*•·–]\s*/, '').trim();
     const header = sectionHeaderName(line);
     if (header) { section = header; continue; }
+    if (isServingLine(line) || looksLikeJunk(line)) continue; // OCR noise / serving info
     const ing = parseIngredient(line);
     if (!ing) continue;
     if (section) ing.section = section;
     out.push(ing);
   }
   return out;
+}
+
+// Strip leading bullets and stray OCR symbols/quotes from a line.
+export function stripLead(line) {
+  return String(line).replace(/^[\s>~»«°|•·*§"“”'’.,_\-–—]+/, '').trim();
+}
+
+// A line with no real word, or mostly symbols, is treated as OCR garbage.
+export function looksLikeJunk(line) {
+  const l = String(line).trim();
+  if (!l) return true;
+  const words = l.match(/\p{L}{3,}/gu) || [];
+  if (!words.length) return true;
+  const letters = (l.match(/\p{L}/gu) || []).length;
+  const nonSpace = l.replace(/\s/g, '').length;
+  return nonSpace > 0 && letters / nonSpace < 0.45;
+}
+
+// Recognise a "serves N" / "pour N personnes" line (not an ingredient).
+export function isServingLine(line) {
+  return /^(?:pour\s+\d{1,3}\s+(?:personnes?|pers\.?|convives?)|serves?\s+\d|(?:portions?|servings?)\s*:?\s*\d|\d{1,3}\s+(?:personnes?|portions?|servings?))\b/i.test(line);
+}
+
+// Pull a servings count out of OCR'd text, if present.
+export function extractServings(text) {
+  const m = String(text).match(/pour\s+(\d{1,3})\s+(?:personnes?|pers|convives?)|serves?\s+(\d{1,3})|(\d{1,3})\s+(?:personnes|portions|servings)/i);
+  if (!m) return null;
+  const n = parseInt(m[1] || m[2] || m[3], 10);
+  return n > 0 && n < 100 ? n : null;
 }
 
 // Recognize a line that introduces an ingredient sub-group; returns its name or null.
@@ -190,16 +229,17 @@ export function formatQty(n) {
 export function splitInstructions(text) {
   let t = String(text).replace(/\r/g, '').trim();
   if (!t) return [];
-  const clean = (s) => s.replace(/^[-*•·–]\s*/, '').replace(/\s+/g, ' ').trim();
+  const clean = (s) => stripLead(s).replace(/\s+/g, ' ').trim();
+  const keep = (s) => s.length > 1 && !looksLikeJunk(s);
 
   // 1) Explicit numbering / "Étape N" / "Step N".
   const numbered = t
     .split(/\n?\s*(?:\d{1,2}\s*[.)]|[ée]tape\s*\d+\s*[:.)-]?|step\s*\d+\s*[:.)-]?)\s+/i)
-    .map(clean).filter((s) => s.length > 1);
+    .map(clean).filter(keep);
   if (numbered.length > 1) return numbered;
 
   // 2) Merge OCR line-wrapping: a line that continues the previous sentence.
-  const lines = t.split('\n').map((l) => l.trim()).filter(Boolean);
+  const lines = t.split('\n').map((l) => stripLead(l)).filter((l) => l && !looksLikeJunk(l));
   const merged = [];
   for (const line of lines) {
     const prev = merged[merged.length - 1];
@@ -209,10 +249,10 @@ export function splitInstructions(text) {
       merged.push(line);
     }
   }
-  if (merged.length > 1) return merged.map(clean);
+  if (merged.length > 1) return merged.map(clean).filter(keep);
 
   // 3) Single block: split on sentence boundaries.
-  return t.split(/(?<=[.!?])\s+/).map(clean).filter((s) => s.length > 1);
+  return t.split(/(?<=[.!?])\s+/).map(clean).filter(keep);
 }
 
 // Heuristic parser for pasted / OCR'd recipe text -> {title, ingredients[], steps[]}

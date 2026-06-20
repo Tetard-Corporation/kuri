@@ -2,7 +2,7 @@
 import { h, setTopbar, toast, modal, fileToDataURL } from '../ui.js';
 import { navigate } from '../router.js';
 import { importFromUrl, ocrImages } from '../import.js';
-import { parseRecipeText, parseIngredientList, splitInstructions, ingredientToString } from '../parse.js';
+import { parseRecipeText, parseIngredientList, splitInstructions, extractServings, ingredientToString } from '../parse.js';
 import { store, blankRecipe } from '../store.js';
 import { exportData } from '../backup.js';
 import { logImportCancelled, logImportSaved, recipeSnapshot } from '../feedback.js';
@@ -199,17 +199,21 @@ function photoForm() {
       const all = [...ingPhotos, ...stepPhotos];
       setStatus(0, 0, all.length);
       const texts = await ocrImages(all, { onProgress: setStatus });
-      const ingredients = parseIngredientList(texts.slice(0, ingPhotos.length).join('\n'));
+      const ingText = texts.slice(0, ingPhotos.length).join('\n');
+      const ingredients = parseIngredientList(ingText);
       const steps = splitInstructions(texts.slice(ingPhotos.length).join('\n'));
+      const servings = extractServings(ingText);
       status.textContent = '';
       if (!ingredients.length && !steps.length) { toast('No text found in the photos'); return; }
-      preview({
+      const parsed = {
         title: titleInput.value.trim() || 'Imported recipe',
         ingredients,
         steps,
         image: cover || ingPhotos[0] || stepPhotos[0] || '',
         source: { type: 'photo' }
-      });
+      };
+      if (servings) parsed.servings = servings;
+      preview(parsed);
     } catch (err) {
       status.textContent = '';
       toast(err.message || 'OCR failed');
