@@ -10,6 +10,7 @@ export async function shoppingView(params, root) {
   const meta = (await store.getMeta('shopping'))?.value || { recipeIds: [], checked: {} };
   meta.recipeIds = (meta.recipeIds || []).filter((id) => recipeById.has(id));
   meta.checked = meta.checked || {};
+  meta.extras = meta.extras || []; // raw ingredients added directly (e.g. from Plan)
 
   // Coming from a list: replace the current selection.
   if (params.source) {
@@ -20,6 +21,7 @@ export async function shoppingView(params, root) {
       ids = l ? (l.recipeIds || []) : [];
     }
     meta.recipeIds = ids;
+    meta.extras = [];
     await save();
     history.replaceState(null, '', '#/shopping');
   }
@@ -31,29 +33,35 @@ export async function shoppingView(params, root) {
   function render() {
     root.innerHTML = '';
     const selected = meta.recipeIds.map((id) => recipeById.get(id)).filter(Boolean);
+    const extras = meta.extras || [];
 
     root.append(
       h('button', { class: 'btn btn--block', style: 'margin-bottom:12px', onclick: pickRecipes },
         selected.length ? `🍽️ ${selected.length} recipe${selected.length === 1 ? '' : 's'} selected — edit` : '+ Select recipes')
     );
 
-    if (!selected.length) {
+    if (!selected.length && !extras.length) {
       root.append(h('div', { class: 'empty' }, [
         h('div', { class: 'empty__emoji' }, '🛒'),
         h('h3', {}, 'Your shopping list is empty'),
-        h('p', { class: 'muted' }, 'Pick a few recipes and we’ll combine all their ingredients into one tidy list.')
+        h('p', { class: 'muted' }, 'Pick recipes, or tap ingredients in the Plan tab — we’ll combine them into one tidy list.')
       ]));
       return;
     }
 
-    // selected recipe chips
-    root.append(h('div', { class: 'chips', style: 'margin-bottom:14px' },
-      selected.map((r) => h('span', { class: 'tag' }, (r.emoji || '') + ' ' + r.title))));
+    // selected recipe + added-ingredient chips
+    if (selected.length || extras.length) {
+      root.append(h('div', { class: 'chips', style: 'margin-bottom:14px' }, [
+        ...selected.map((r) => h('span', { class: 'tag' }, (r.emoji || '') + ' ' + r.title)),
+        ...extras.map((name) => h('span', { class: 'tag' }, '🧺 ' + name))
+      ]));
+    }
 
     const entries = [];
     selected.forEach((r) => {
       (r.ingredients || []).forEach((ing) => entries.push({ ing, recipeTitle: r.title }));
     });
+    extras.forEach((name) => entries.push({ ing: { name, qty: null, unit: null, raw: name }, recipeTitle: 'Added' }));
     const items = aggregateShopping(entries);
     const remaining = items.filter((it) => !meta.checked[key(it)]).length;
 
