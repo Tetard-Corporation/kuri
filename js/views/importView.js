@@ -132,6 +132,30 @@ function photoForm() {
   const titleInput = h('input', { type: 'text', placeholder: 'Recipe name (optional)' });
   const status = h('div', { class: 'muted', style: 'margin-top:10px;font-size:0.85rem' });
 
+  // Optional cover photo (not OCR'd — used only as the recipe image).
+  let cover = '';
+  const coverInput = h('input', { type: 'file', accept: 'image/*', class: 'hidden' });
+  const coverField = h('div', { class: 'field' });
+  function renderCover() {
+    coverField.innerHTML = '';
+    coverField.append(h('label', {}, 'Cover photo (optional)'));
+    if (cover) {
+      coverField.append(h('div', { class: 'row', style: 'gap:10px;align-items:stretch' }, [
+        h('div', { style: `flex:1;height:120px;border-radius:12px;background:#0001 center/cover no-repeat;background-image:url("${cover}")` }),
+        h('button', { class: 'btn btn--sm', onclick: () => { cover = ''; renderCover(); } }, '✕ Remove')
+      ]));
+    } else {
+      coverField.append(h('button', { class: 'btn btn--block', onclick: () => coverInput.click() }, '🖼️ Add cover photo'));
+    }
+    coverField.append(coverInput);
+  }
+  coverInput.onchange = async () => {
+    if (coverInput.files[0]) cover = await fileToDataURL(coverInput.files[0], 1280, 0.85);
+    coverInput.value = '';
+    renderCover();
+  };
+  renderCover();
+
   function bucket(label, arr) {
     const gallery = h('div', { class: 'photo-gallery' });
     const input = h('input', { type: 'file', accept: 'image/*', multiple: true, class: 'hidden' });
@@ -183,7 +207,7 @@ function photoForm() {
         title: titleInput.value.trim() || 'Imported recipe',
         ingredients,
         steps,
-        image: ingPhotos[0] || stepPhotos[0] || '',
+        image: cover || ingPhotos[0] || stepPhotos[0] || '',
         source: { type: 'photo' }
       });
     } catch (err) {
@@ -197,6 +221,7 @@ function photoForm() {
 
   return h('div', {}, [
     h('div', { class: 'field' }, [h('label', {}, 'Recipe name'), titleInput]),
+    coverField,
     ingBucket,
     stepBucket,
     extractBtn,
