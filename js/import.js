@@ -239,28 +239,100 @@ async function loadTesseract() {
   return tesseractPromise;
 }
 
+// Higher-accuracy ("best") trained models, served by the Tesseract.js CDN.
+const TESSDATA_BEST = 'https://tessdata.projectnaptha.com/4.0.0_best';
+
 // OCR several images in one worker. langs default to French + English for recipes.
 // onProgress(fraction, index, total) reports per-image progress.
-export async function ocrImages(images, { langs = 'eng+fra', onProgress } = {}) {
+export async function ocrImages(images, { langs = 'eng+fra', onProgress, preprocess = true } = {}) {
   const list = (images || []).filter(Boolean);
   if (!list.length) return [];
   const Tesseract = await loadTesseract();
   const worker = await Tesseract.createWorker(langs, 1, {
+    langPath: TESSDATA_BEST,
     logger: (m) => {
       if (m.status === 'recognizing text' && onProgress) onProgress(m.progress);
     }
   });
   try {
+    await worker.setParameters({
+      tessedit_pageseg_mode: '6',        // assume a single uniform block of text
+      preserve_interword_spaces: '1'
+    });
     const texts = [];
     for (let i = 0; i < list.length; i++) {
       onProgress && onProgress(0, i, list.length);
-      const { data } = await worker.recognize(list[i]);
+      const img = preprocess ? await preprocessForOCR(list[i]).catch(() => list[i]) : list[i];
+      const { data } = await worker.recognize(img);
       texts.push(data.text || '');
     }
     return texts;
   } finally {
     await worker.terminate();
   }
+}
+
+// Prepare a photo for OCR: upscale small text, greyscale, and stretch contrast.
+// (Tesseract is very sensitive to input quality; this is the biggest lever.)
+export function preprocessForOCR(src, { target = 1800, maxDim = 2600 } = {}) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        let w = img.naturalWidth || img.width;
+        let h = img.naturalHeight || img.height;
+        const longSide = Math.max(w, h);
+        let scale = 1;
+        if (longSide < target) scale = target / longSide;       // upscale small photos
+        else if (longSide > maxDim) scale = maxDim / longSide;   // cap huge ones
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0, w, h);
+        const id = ctx.getImageData(0, 0, w, h);
+        const d = id.data;
+
+        // Greyscale + luminance histogram.
+        const hist = new Uint32Array(256);
+        for (let p = 0; p < d.length; p += 4) {
+          const g = (d[p] * 0.299 + d[p + 1] * 0.587 + d[p + 2] * 0.114) | 0;
+          d[p] = d[p + 1] = d[p + 2] = g;
+          hist[g]++;
+        }
+        // Contrast stretch between the 2nd and 98th percentiles.
+        const total = w * h;
+        const lo = percentile(hist, total, 0.02);
+        const hi = percentile(hist, total, 0.98);
+        const range = Math.max(1, hi - lo);
+        const lut = new Uint8ClampedArray(256);
+        for (let v = 0; v < 256; v++) lut[v] = Math.round(((v - lo) * 255) / range);
+        for (let p = 0; p < d.length; p += 4) {
+          const v = lut[d[p]];
+          d[p] = d[p + 1] = d[p + 2] = v;
+        }
+        ctx.putImageData(id, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    img.onerror = () => reject(new Error('image load failed'));
+    img.src = src;
+  });
+}
+
+function percentile(hist, total, frac) {
+  const goal = total * frac;
+  let acc = 0;
+  for (let v = 0; v < 256; v++) {
+    acc += hist[v];
+    if (acc >= goal) return v;
+  }
+  return 255;
 }
 
 export async function ocrImage(image, onProgress) {
