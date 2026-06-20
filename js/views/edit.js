@@ -3,6 +3,7 @@ import { store, blankRecipe } from '../store.js';
 import { h, setTopbar, toast, fileToDataURL, confirmDialog } from '../ui.js';
 import { navigate, back } from '../router.js';
 import { parseIngredientList, ingredientsToText } from '../parse.js';
+import { recipeSnapshot, logRecipeEdit } from '../feedback.js';
 
 const EMOJIS = ['🍽️', '🍝', '🥗', '🍲', '🍛', '🥘', '🍜', '🥞', '🍳', '🌮', '🍕', '🍔', '🥪', '🍰', '🍪', '🥧', '🍚', '🐟', '🥩', '🍗'];
 
@@ -108,6 +109,9 @@ export async function editView({ id }, root) {
   async function save() {
     const title = titleInput.value.trim();
     if (!title) { toast('Please add a name'); titleInput.focus(); return; }
+    // Snapshot the pre-edit state to log corrections (skip blank new manual recipes).
+    const before = recipeSnapshot(recipe);
+    const trackEdit = !isNew || !!recipe.imported;
     Object.assign(recipe, {
       title,
       description: descInput.value.trim(),
@@ -121,6 +125,7 @@ export async function editView({ id }, root) {
       steps: stepsInput.value.split('\n').map((s) => s.trim()).filter(Boolean)
     });
     const saved = await store.saveRecipe(recipe);
+    if (trackEdit) await logRecipeEdit(before, saved);
     toast('Recipe saved');
     navigate(`/recipe/${saved.id}`);
   }

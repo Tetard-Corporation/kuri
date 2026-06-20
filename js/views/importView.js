@@ -5,12 +5,22 @@ import { importFromUrl, ocrImage } from '../import.js';
 import { parseRecipeText, ingredientToString } from '../parse.js';
 import { store, blankRecipe } from '../store.js';
 import { exportData } from '../backup.js';
+import { logImportCancelled, logImportSaved, recipeSnapshot } from '../feedback.js';
 
 export async function importView(_params, root) {
   setTopbar({ title: 'Import' });
   root.innerHTML = '';
 
   root.append(
+    h('div', { class: 'section' }, [
+      h('div', { class: 'row row--between', style: 'gap:12px' }, [
+        h('div', { class: 'grow' }, [
+          h('h2', { style: 'margin:0' }, '✏️ New recipe'),
+          h('p', { class: 'muted', style: 'margin:4px 0 0;font-size:0.85rem' }, 'Start from a blank recipe and type it in yourself.')
+        ]),
+        h('button', { class: 'btn btn--primary', onclick: () => navigate('/recipe/new/edit') }, '+ New')
+      ])
+    ]),
     section('🌐 From a website', 'Paste a recipe URL. We read the page’s structured recipe data when available.', [
       urlForm()
     ]),
@@ -20,8 +30,57 @@ export async function importView(_params, root) {
     section('📷 From a photo', 'Snap or upload a photo of a recipe; text is read on-device (OCR).', [
       photoForm()
     ]),
-    backupSection()
+    backupSection(),
+    feedbackSection()
   );
+}
+
+// Connector feedback: corrections and cancelled imports collected to improve parsers.
+function feedbackSection() {
+  const wrap = h('div', { class: 'section' });
+  const body = h('div', {});
+  wrap.append(
+    h('h2', { style: 'margin-top:0' }, '🛠️ Connector data'),
+    h('p', { class: 'muted', style: 'margin-top:0;font-size:0.85rem' },
+      'Your edits to imported recipes and any cancelled imports are logged on-device. Export them to help improve the importers.'),
+    body
+  );
+
+  store.allFeedback().then((items) => {
+    const counts = items.reduce((m, it) => ((m[it.type] = (m[it.type] || 0) + 1), m), {});
+    const summary = Object.entries(counts).map(([k, v]) => `${v} ${k}`).join(' · ') || 'Nothing logged yet';
+    body.innerHTML = '';
+    body.append(
+      h('p', { class: 'muted', style: 'font-size:0.82rem;margin-top:0' }, summary),
+      h('div', { class: 'row', style: 'gap:10px' }, [
+        h('button', { class: 'btn grow', disabled: !items.length, onclick: () => exportFeedback(items) }, '⬇️ Export data'),
+        h('button', { class: 'btn grow', disabled: !items.length, onclick: () => clearFeedback() }, '🗑 Clear')
+      ])
+    );
+  });
+
+  async function clearFeedback() {
+    if (!(await modal({
+      content: h('p', { style: 'margin:0' }, 'Delete all collected connector data?'),
+      actions: [{ label: 'Cancel', value: false }, { label: 'Delete', danger: true, value: true }]
+    }))) return;
+    await store.clearFeedback();
+    toast('Connector data cleared');
+    importView({}, document.getElementById('view'));
+  }
+
+  return wrap;
+}
+
+function exportFeedback(items) {
+  const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), feedback: items }, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = h('a', { href: url, download: `kuri-connector-data-${new Date().toISOString().slice(0, 10)}.json` });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast('Connector data exported');
 }
 
 function section(title, sub, children) {
@@ -58,7 +117,9 @@ function textForm() {
   const btn = h('button', { class: 'btn btn--primary', style: 'margin-top:8px', onclick: () => {
     const text = ta.value.trim();
     if (text.length < 10) { toast('Paste a bit more text'); return; }
-    preview(parseRecipeText(text));
+    const parsed = parseRecipeText(text);
+    parsed.source = { type: 'text' };
+    preview(parsed);
   } }, 'Parse text');
   return h('div', {}, [ta, btn]);
 }
@@ -80,6 +141,7 @@ function photoForm() {
       if (!text.trim()) { toast('No text found in image'); return; }
       const parsed = parseRecipeText(text);
       parsed.image = dataUrl;
+      parsed.source = { type: 'photo' };
       preview(parsed);
     } catch (err) {
       status.textContent = '';
@@ -111,13 +173,20 @@ function preview(parsed) {
       { label: 'Save', primary: true, value: 'save' }
     ]
   }).then(async (action) => {
-    if (!action) return;
+    if (!action) {
+      // Cancelled import: log it so the connector can be improved later.
+      await logImportCancelled(parsed);
+      return;
+    }
     const draft = { ...blankRecipe(), ...parsed };
+    // Keep the raw parse as a baseline to measure corrections against.
+    draft.imported = recipeSnapshot(parsed);
     if (action === 'edit') {
       sessionStorage.setItem('importDraft', JSON.stringify(draft));
       navigate('/recipe/new/edit');
     } else if (action === 'save') {
       const saved = await store.saveRecipe(draft);
+      await logImportSaved(saved);
       toast('Recipe imported');
       navigate(`/recipe/${saved.id}`);
     }

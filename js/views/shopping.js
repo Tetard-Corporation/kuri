@@ -60,6 +60,7 @@ export async function shoppingView(params, root) {
     root.append(h('div', { class: 'row row--between', style: 'margin-bottom:6px' }, [
       h('span', { class: 'muted' }, `${remaining} of ${items.length} to buy`),
       h('div', { class: 'row', style: 'gap:8px' }, [
+        h('button', { class: 'btn btn--sm', onclick: () => sendToReminders(items) }, '🍎 Reminders'),
         h('button', { class: 'btn btn--sm', onclick: copyList }, '📋 Copy'),
         h('button', { class: 'btn btn--sm', onclick: clearChecked }, 'Reset')
       ])
@@ -98,6 +99,56 @@ export async function shoppingView(params, root) {
         () => toast('Shopping list copied'),
         () => modal({ title: 'Shopping list', content: h('textarea', { rows: 12, readonly: true, value: text }), actions: [{ label: 'Close', value: null }] })
       );
+    }
+
+    // Items still to buy (or all of them if nothing is checked yet), one per line.
+    function remindersLines() {
+      const pending = items.filter((it) => !meta.checked[key(it)]);
+      const use = pending.length ? pending : items;
+      return use.map((it) => [it.qty, it.name].filter(Boolean).join(' '));
+    }
+
+    function sendToReminders() {
+      const lines = remindersLines();
+      if (!lines.length) { toast('Nothing to add'); return; }
+      const text = lines.join('\n');
+      // Hand the list to a one-time "Kuri Shopping" Shortcut that adds each
+      // line to Apple Reminders. This is the only reliable itemized path on iOS.
+      const scURL = 'shortcuts://run-shortcut?name=' + encodeURIComponent('Kuri Shopping') +
+        '&input=text&text=' + encodeURIComponent(text);
+
+      const steps = h('ol', { style: 'margin:8px 0 0;padding-left:18px;font-size:0.85rem;line-height:1.5' }, [
+        h('li', {}, 'Open the Shortcuts app and tap + to create a new shortcut.'),
+        h('li', {}, [h('span', {}, 'Rename it exactly '), h('strong', {}, 'Kuri Shopping'), h('span', {}, '.')]),
+        h('li', {}, [h('strong', {}, 'Split Text'), h('span', {}, ' → input “Shortcut Input”, separator “New Lines”.')]),
+        h('li', {}, [h('strong', {}, 'Repeat with Each'), h('span', {}, ' (Split Text).')]),
+        h('li', {}, [h('span', {}, 'Inside the repeat: '), h('strong', {}, 'Add New Reminder'), h('span', {}, ' with title “Repeat Item”, in your chosen list.')]),
+        h('li', {}, 'Tap Done, come back here, and tap “Add to Reminders”.')
+      ]);
+
+      const content = h('div', {}, [
+        h('p', { style: 'margin:0 0 12px;font-size:0.9rem' },
+          `${lines.length} item${lines.length === 1 ? '' : 's'} will be added to Apple Reminders via the Shortcuts app.`),
+        h('a', { href: scURL, class: 'btn btn--primary btn--block', style: 'margin-bottom:8px' }, '🍎 Add to Reminders'),
+        navigator.share && h('button', {
+          class: 'btn btn--block', style: 'margin-bottom:8px',
+          onclick: () => { navigator.share({ title: 'Shopping list', text }).catch(() => {}); }
+        }, '🔗 Share instead…'),
+        h('button', {
+          class: 'btn btn--block',
+          onclick: () => navigator.clipboard?.writeText(text).then(() => toast('Copied'), () => {})
+        }, '📋 Copy list'),
+        h('details', { style: 'margin-top:14px' }, [
+          h('summary', { style: 'cursor:pointer;color:var(--muted);font-size:0.85rem' }, 'First time? Set up the shortcut'),
+          h('a', { href: './shortcuts/Kuri%20Shopping.shortcut', class: 'btn btn--block', style: 'margin:10px 0 6px' }, '📲 Get the ready-made shortcut'),
+          h('p', { class: 'muted', style: 'font-size:0.8rem;margin:0 0 4px' },
+            'Opens in the Shortcuts app and must be named exactly “Kuri Shopping”. As it is unsigned, enable Settings → Shortcuts → Allow Untrusted Shortcuts first.'),
+          h('p', { class: 'muted', style: 'font-size:0.8rem;margin:8px 0 0' }, 'Or build it manually:'),
+          steps
+        ])
+      ].filter(Boolean));
+
+      modal({ title: 'Add to Apple Reminders', content, actions: [{ label: 'Close', value: null }] });
     }
 
     async function clearChecked() {

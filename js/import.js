@@ -34,7 +34,7 @@ async function fetchReadable(url) {
 
 // Pull a recipe from a web page URL, trying the most accurate source first.
 export async function importFromUrl(url) {
-  const src = { type: 'url', url };
+  const src = { type: /instagram\.com/i.test(url) ? 'instagram' : 'url', url };
 
   // 1) Structured schema.org/Recipe data (most accurate).
   const html = await fetchHtml(url);

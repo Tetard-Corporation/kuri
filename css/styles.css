@@ -177,6 +177,23 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent-soft
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%238c7d74' stroke-width='2' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: 13px center; }
 
+/* Seasonal ideas popup */
+.ideas-idea {
+  background: var(--accent-soft); border-radius: 14px; padding: 16px; text-align: center; margin-bottom: 10px;
+}
+.ideas-idea__label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent-dark); opacity: 0.8; margin-bottom: 4px; }
+.ideas-idea__main { font-size: 1.4rem; font-weight: 800; color: var(--accent-dark); }
+.ideas-idea__sub { color: var(--text); margin-top: 4px; font-size: 0.95rem; }
+.ideas-h { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin: 16px 0 8px; font-weight: 700; }
+
+/* Segmented control */
+.segmented { display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 3px; gap: 2px; }
+.seg {
+  border: none; background: none; color: var(--muted);
+  padding: 7px 16px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+}
+.seg.active { background: var(--surface); color: var(--accent-dark); box-shadow: var(--shadow); }
+
 /* Chips */
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .chip {

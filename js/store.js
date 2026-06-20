@@ -42,6 +42,17 @@ export const store = {
   getMeta: (key) => db.get('meta', key),
   setMeta: (key, value) => db.put('meta', { key, value }),
 
+  // Connector feedback (edits/corrections + cancelled imports) for improving parsers.
+  async addFeedback(entry) {
+    const record = { id: uid(), at: Date.now(), ...entry };
+    return db.put('feedback', record);
+  },
+  async allFeedback() {
+    const list = await db.getAll('feedback');
+    return list.sort((a, b) => (b.at || 0) - (a.at || 0));
+  },
+  clearFeedback: () => db.clear('feedback'),
+
   async exportAll() {
     return {
       version: 1,
