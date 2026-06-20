@@ -2,6 +2,7 @@
 import { h, setTopbar, toast, modal, fileToDataURL } from '../ui.js';
 import { navigate } from '../router.js';
 import { importFromUrl, ocrImages } from '../import.js';
+import { cropImage } from '../crop.js';
 import { parseRecipeText, parseIngredientList, splitInstructions, extractServings, ingredientToString } from '../parse.js';
 import { store, blankRecipe } from '../store.js';
 import { exportData } from '../backup.js';
@@ -164,7 +165,9 @@ function photoForm() {
       arr.forEach((src, i) => {
         gallery.append(h('div', { class: 'photo-thumb', style: `background-image:url("${src}")` }, [
           h('button', { class: 'photo-thumb__x', title: 'Remove',
-            onclick: () => { arr.splice(i, 1); render(); } }, '×')
+            onclick: () => { arr.splice(i, 1); render(); } }, '×'),
+          h('button', { class: 'photo-thumb__crop', title: 'Crop',
+            onclick: async () => { const c = await cropImage(arr[i]); if (c) { arr[i] = c; render(); } } }, '✂️')
         ]));
       });
       if (!arr.length) gallery.append(h('span', { class: 'muted', style: 'font-size:0.8rem' }, 'No photos yet'));
