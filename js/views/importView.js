@@ -12,6 +12,15 @@ export async function importView(_params, root) {
   root.innerHTML = '';
 
   root.append(
+    h('div', { class: 'section' }, [
+      h('div', { class: 'row row--between', style: 'gap:12px' }, [
+        h('div', { class: 'grow' }, [
+          h('h2', { style: 'margin:0' }, '✏️ New recipe'),
+          h('p', { class: 'muted', style: 'margin:4px 0 0;font-size:0.85rem' }, 'Start from a blank recipe and type it in yourself.')
+        ]),
+        h('button', { class: 'btn btn--primary', onclick: () => navigate('/recipe/new/edit') }, '+ New')
+      ])
+    ]),
     section('🌐 From a website', 'Paste a recipe URL. We read the page’s structured recipe data when available.', [
       urlForm()
     ]),

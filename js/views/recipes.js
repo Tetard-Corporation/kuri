@@ -2,13 +2,14 @@
 import { store } from '../store.js';
 import { h, setTopbar } from '../ui.js';
 import { navigate } from '../router.js';
+import { openIdeasPopup } from '../ideas.js';
 
 let filter = { q: '', tag: null, mode: 'all' };
 
 export async function recipesView(_params, root) {
   setTopbar({
     title: 'Recipes',
-    action: { label: '+ New', onClick: () => navigate('/recipe/new/edit') }
+    action: { label: '💡 Ideas', onClick: openIdeasPopup }
   });
 
   const recipes = await store.allRecipes();
