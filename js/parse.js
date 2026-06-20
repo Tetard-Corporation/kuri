@@ -340,17 +340,17 @@ function isNoise(line) {
 
 // Aggregate ingredients across recipes into a merged shopping list.
 export function aggregateShopping(entries) {
-  // entries: [{ ing, recipeTitle }]
-  const groups = new Map(); // key: ingredientKey -> { name, units, recipes }
-  for (const { ing, recipeTitle } of entries) {
+  // entries: [{ ing, recipe?: { id, title, emoji } }]
+  const groups = new Map(); // key: ingredientKey -> { name, units, recipes:Map }
+  for (const { ing, recipe } of entries) {
     const key = ingredientKey(ing.name) || ing.name.toLowerCase().trim();
     if (!groups.has(key)) {
       // Display a clean, merged label (e.g. "oignon rouge finement haché" → "Oignon rouge").
       const label = ingredientKey(ing.name) ? capitalizeWords(key) : ing.name;
-      groups.set(key, { name: label, units: new Map(), plain: [], recipes: new Set() });
+      groups.set(key, { name: label, units: new Map(), plain: [], recipes: new Map() });
     }
     const g = groups.get(key);
-    g.recipes.add(recipeTitle);
+    if (recipe && recipe.title) g.recipes.set(recipe.id || recipe.title, recipe);
     if (ing.qty != null) {
       const u = ing.unit || '';
       g.units.set(u, (g.units.get(u) || 0) + ing.qty);
@@ -368,7 +368,7 @@ export function aggregateShopping(entries) {
     items.push({
       name: g.name,
       qty: qtyParts.join(' + '),
-      recipes: [...g.recipes],
+      recipes: [...g.recipes.values()],
       category: categorize(g.name)
     });
   }

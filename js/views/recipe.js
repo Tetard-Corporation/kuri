@@ -12,6 +12,58 @@ export function seasonMarker(name) {
   return h('span', { class: 'season-tag', title: `Hors saison en ${monthName(new Date().getMonth() + 1)}` }, '🍂 hors saison');
 }
 
+// Compact recipe preview shown in a popup (e.g. from a shopping-list item tag).
+export function recipePopup(r) {
+  if (!r) return;
+  const hero = r.image
+    ? h('div', { class: 'hero', style: `background-image:url("${String(r.image).replace(/"/g, '%22')}");aspect-ratio:16/9` })
+    : h('div', { class: 'hero', style: 'aspect-ratio:16/9' }, r.emoji || '🍽️');
+
+  const ingWrap = h('div', {});
+  let current = null;
+  let list = null;
+  (r.ingredients || []).forEach((ing) => {
+    const sec = ing.section || '';
+    if (sec !== current || !list) {
+      if (sec) ingWrap.append(h('div', { class: 'ing-group' }, sec));
+      list = h('ul', { class: 'ing-list' });
+      ingWrap.append(list);
+      current = sec;
+    }
+    list.append(h('li', {}, [
+      h('span', { class: 'ing-qty' }, [ing.qty != null ? formatQty(ing.qty) : '', ing.unit].filter(Boolean).join(' ')),
+      h('span', { class: 'grow' }, ing.name),
+      seasonMarker(ing.name)
+    ]));
+  });
+
+  const content = h('div', {}, [
+    hero,
+    r.description && h('p', { class: 'muted', style: 'margin:8px 0 0;font-size:0.88rem' }, r.description),
+    h('div', { class: 'metaline', style: 'margin-top:8px' }, [
+      r.cookTime && h('span', {}, '🔥 ' + r.cookTime),
+      h('span', {}, '🍽️ ' + (r.servings || 1))
+    ].filter(Boolean)),
+    h('h2', { style: 'font-size:1rem' }, 'Ingredients'),
+    ingWrap,
+    (r.steps || []).length && h('h2', { style: 'font-size:1rem' }, 'Instructions'),
+    (r.steps || []).length && h('ol', { class: 'steps' }, r.steps.map((s) => h('li', {}, s)))
+  ].filter(Boolean));
+
+  modal({
+    title: r.title,
+    content,
+    actions: [
+      { label: 'Close', value: null },
+      { label: '👨‍🍳 Cook', value: 'cook' },
+      { label: 'Open', primary: true, value: 'open' }
+    ]
+  }).then((v) => {
+    if (v === 'open') navigate(`/recipe/${r.id}`);
+    else if (v === 'cook') navigate(`/cook/${r.id}`);
+  });
+}
+
 export async function recipeView({ id }, root) {
   const r = await store.getRecipe(id);
   if (!r) { toast('Recipe not found'); navigate('/recipes'); return; }
