@@ -70,7 +70,7 @@ export async function planView(_params, root) {
     items.forEach((v) => {
       chipsBox.append(chip(v.label, have.has(v.norm), () => {
         have.has(v.norm) ? have.delete(v.norm) : have.add(v.norm);
-        renderChips(); renderRecipes(); renderSummary();
+        renderChips(); renderRecipes(); renderSummary(); renderFooter();
       }));
     });
   }
@@ -79,8 +79,8 @@ export async function planView(_params, root) {
     const n = have.size + preps.size;
     haveSummary.innerHTML = '';
     haveSummary.append(
-      h('span', {}, n ? `Selected: ${[...have].length} ingredient(s)${preps.size ? `, ${preps.size} prep` : ''}` : 'Tap what you have, or a preparation.'),
-      n ? h('button', { class: 'btn btn--sm', style: 'margin-left:8px', onclick: () => { have.clear(); preps.clear(); renderChips(); renderRecipes(); renderSummary(); } }, 'Clear') : null
+      h('span', {}, n ? `${[...have].length} ingredient(s)${preps.size ? `, ${preps.size} prep` : ''} — add them straight to a shopping list, or pick recipes below.` : 'Tap ingredients you want (for a shopping list or to find recipes).'),
+      n ? h('button', { class: 'btn btn--sm', style: 'margin-left:8px', onclick: () => { have.clear(); preps.clear(); renderChips(); renderRecipes(); renderSummary(); renderFooter(); } }, 'Clear') : null
     );
   }
 
@@ -143,17 +143,19 @@ export async function planView(_params, root) {
   }
 
   async function buildShopping() {
-    if (!menu.size) { toast('Tick recipes for your menu first'); return; }
+    if (!have.size && !menu.size) { toast('Tap ingredients (or pick recipes) first'); return; }
     const cfg = (await store.getMeta('shopping'))?.value || {};
     cfg.recipeIds = [...menu];
+    cfg.extras = [...have];        // raw ingredients you tapped go straight to the list
     cfg.checked = {};
     await store.setMeta('shopping', cfg);
     navigate('/shopping');
   }
 
   function renderFooter() {
-    shopBtn.textContent = menu.size ? `🛒 Shopping list (${menu.size})` : '🛒 Shopping list';
-    shopBtn.disabled = !menu.size;
+    const n = have.size + menu.size;
+    shopBtn.textContent = n ? `🛒 Shopping list (${n})` : '🛒 Shopping list';
+    shopBtn.disabled = !n;
   }
 
   // ---- assemble (full view) ----
