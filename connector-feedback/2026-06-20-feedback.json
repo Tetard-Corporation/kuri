@@ -1,0 +1,1179 @@
+{
+  "exportedAt": "2026-06-20T11:14:06.115Z",
+  "feedback": [
+    {
+      "id": "mqm9f38lqabd07",
+      "at": 1781954027301,
+      "type": "import-saved",
+      "recipeId": "mqm9f383ryx7kb",
+      "source": {
+        "type": "text"
+      },
+      "imported": {
+        "title": "Risotto au citron et aux aubergines",
+        "ingredients": [
+          {
+            "section": "",
+            "text": "2 aubergines moyennes"
+          },
+          {
+            "section": "",
+            "text": "1 oignon moyen finement haché"
+          },
+          {
+            "section": "",
+            "text": "2 clove ail écrasées"
+          },
+          {
+            "section": "",
+            "text": "200 g riz à risotto"
+          },
+          {
+            "section": "",
+            "text": "12 cl vin blanc"
+          },
+          {
+            "section": "",
+            "text": "75 cl bouillon de légumes chaud"
+          },
+          {
+            "section": "",
+            "text": "1 citron pour le zeste (râpé)"
+          },
+          {
+            "section": "",
+            "text": "2 tbsp jus de citron"
+          },
+          {
+            "section": "",
+            "text": "20 g beurre"
+          },
+          {
+            "section": "",
+            "text": "50 g parmesan râpé (ou d'un autre fromage à pâte dure à maturité)"
+          },
+          {
+            "section": "",
+            "text": "10 g feuilles de basilic ciselées"
+          },
+          {
+            "section": "",
+            "text": "Huile d'olive"
+          },
+          {
+            "section": "",
+            "text": "Gros sel de mer et poivre noir"
+          }
+        ],
+        "steps": [
+          "Commencez par faire griller une des aubergines (voir page 116).",
+          "Quand elle est bien cuite, faites une entaille sur toute la hauteur pour prélever délicatement la chair. Jetez la peau. Hachez grossièrement la chair de l'aubergine et réservez-la.",
+          "Coupez l'aubergine restante en cubes de 1,5 cm de côté. Faites chauffer 8 cl d'huile dans une poêle pour y faire frire les cubes d'aubergine, en procédant en plusieurs fois. Quand ils sont bien dorés et croustillants, mettez-les dans une passoire et saupoudrez-les de gros sel. Laissez-les refroidir.",
+          "Préparez maintenant le risotto. Faites fondre doucement l'oignon dans 2 cuil. à soupe d'huile, dans une casserole à fond épais.",
+          "Quand il commence à devenir translucide, ajoutez l'ail et laissez cuire pendant 3 min. Augmentez le feu, puis versez le riz en pluie et remuez pour bien enrober d'huile tous les grains. Continuez de mélanger sur le feu de 2 à 3 min, puis mouillez avec le vin blanc (le mélange va crépiter légèrement). Remuez de 2 à 3 min pour que le liquide s'évapore, puis baissez à feu moyen.",
+          "Commencez alors à verser le bouillon, 1 louche à la fois, en remuant sans cesse après chaque ajout. Attendez que tout le liquide soit absorbé avant d'ajouter une autre louche de bouillon et mélangez sans arrêt. Quand tout le bouillon a été versé sur le riz, retirez la casserole du feu et ajoutez la moitié du zeste râpé, le jus de citron, la chair de l'aubergine grillée, le beurre, presque tout le parmesan et du sel (34 de cuil. à café). Poivrez, puis mélangez délicatement. Couvrez et laissez le risotto reposer pendant 5 min. Goûtez pour rectifier l'assaisonnement si nécessaire.",
+          "Pour servir, répartissez le risotto dans des bols peu profonds et garnissez avec les cubes d'aubergine frits. Parsemez de parmesan, de basilic et de zeste de citron."
+        ]
+      }
+    },
+    {
+      "id": "mqm9a6a4ripzbi",
+      "at": 1781953797964,
+      "type": "import-saved",
+      "recipeId": "mqm9a69lmqfeot",
+      "source": {
+        "type": "text"
+      },
+      "imported": {
+        "title": "Aubergine grillée au tahini",
+        "ingredients": [
+          {
+            "section": "",
+            "text": "Pour 2 à 4 personnes"
+          },
+          {
+            "section": "",
+            "text": "1 grosse aubergine"
+          },
+          {
+            "section": "",
+            "text": "70 g tahini (crème de sésame)"
+          },
+          {
+            "section": "",
+            "text": "2 tsp mélasse de grenade"
+          },
+          {
+            "section": "",
+            "text": "1 tbsp jus de citron"
+          },
+          {
+            "section": "",
+            "text": "1 clove ail écrasée"
+          },
+          {
+            "section": "",
+            "text": "3 tbsp persil haché"
+          },
+          {
+            "section": "",
+            "text": "3 mini-concombres (180 g ; facultatif)"
+          },
+          {
+            "section": "",
+            "text": "90 g tomates cerise (facultatif)"
+          },
+          {
+            "section": "",
+            "text": "½ grosse grenade"
+          },
+          {
+            "section": "",
+            "text": "Huile d'olive"
+          },
+          {
+            "section": "",
+            "text": "Sel et poivre noir"
+          }
+        ],
+        "steps": [
+          "Commencez par faire griller les aubergines (voir page 116), puis récupérez la chair à la cuillère en évitant la peau. Mettez la chair des aubergines dans une passoire et laissez égoutter pendant au moins 30 min pour extraire une partie de l'eau de végétation.",
+          "Hachez grossièrement la chair de l'aubergine et transférez-la dans un saladier. Ajoutez le tahini, 6 cl d'eau, la mélasse de grenade, le jus de citron, l'ail, le persil et un peu de sel et de poivre; mélangez au fouet. Goûtez et rectifiez l'assaisonnement en ajoutant si nécessaire de l'ail, du jus de citron ou de la mélasse. Vous devez obtenir une salade un peu acide et légèrement sucrée.",
+          "Si vous souhaitez ajouter du concombre et des tomates, coupez les concombres en deux dans la longueur, puis chaque moitié encore en deux. Découpez chaque quartier en morceaux de 1 cm.",
+          "Coupez les tomates en deux. Incorporez les tomates et les concombres à la salade d'aubergine.",
+          "Prélevez les graines de la demi-grenade (voir page 110). Pour servir, transférez la salade dans un plat peu profond, parsemez de graines de grenade et arrosez d'huile."
+        ]
+      }
+    },
+    {
+      "id": "mqm9802w850vy3",
+      "at": 1781953696616,
+      "type": "import-corrected",
+      "recipeId": "mqm97pzcbosou1",
+      "source": {
+        "type": "text"
+      },
+      "imported": {
+        "title": "Nouilles soja aux aubergines et à la mangue",
+        "ingredients": [
+          {
+            "section": "",
+            "text": "12 cl vinaigre de riz"
+          },
+          {
+            "section": "",
+            "text": "40 g sucre en poudre"
+          },
+          {
+            "section": "",
+            "text": "½ tsp sel"
+          },
+          {
+            "section": "",
+            "text": "2 clove ail écrasées"
+          },
+          {
+            "section": "",
+            "text": "/½ piment rouge frais émincé"
+          },
+          {
+            "section": "",
+            "text": "1 tsp huile de sésame grillé"
+          },
+          {
+            "section": "",
+            "text": "1 citron vert pour le zeste (râpé)"
+          },
+          {
+            "section": "",
+            "text": "et le jus"
+          },
+          {
+            "section": "",
+            "text": "2 aubergines coupées en tranches de 2 cm d'épaisseur"
+          },
+          {
+            "section": "",
+            "text": "250 g nouilles soba"
+          },
+          {
+            "section": "",
+            "text": "1 grosse mangue mûre coupée en dés de 1 cm de côté ou en lanières de 5 mm d'épaisseur"
+          },
+          {
+            "section": "",
+            "text": "40 g feuilles de basilic hachées (si vous utilisez du basilic thaï, diminuez la quantité)"
+          },
+          {
+            "section": "",
+            "text": "40 g feuilles de coriandre ciselées"
+          },
+          {
+            "section": "",
+            "text": "½ oignon rouge émincé très finement"
+          },
+          {
+            "section": "",
+            "text": "Huile de tournesol"
+          }
+        ],
+        "steps": [
+          "Préparez d'abord la sauce. Dans une petite casserole, faites chauffer pendant 1 min sur feu doux le vinaigre, le sucre et le sel.",
+          "Quand le sucre a fondu, retirez la casserole du feu et ajoutez l'ail, le piment et l'huile de sésame. Laissez refroidir avant d'incorporer le zeste et le jus du citron vert.",
+          "Faites chauffer environ 20 cl d'huile de tournesol dans une grande poêle et faites frire les aubergines en trois ou quatre fois. Quand elles sont bien cuites, mettez-les dans une passoire, saupoudrez-les généreusement de sel et laissez-les s'égoutter.",
+          "Faites cuire les nouilles de 5 à 8 min dans un grand volume d'eau bouillante salée, en remuant de temps en temps. Elles doivent rester un peu fermes. Égouttez-les et rafraîchissez-les sous l'eau froide, puis laissez-les sécher sur un torchon.",
+          "Mélangez, dans un saladier, les nouilles, la mangue, l'aubergine, la moitié des herbes et l'oignon. Arrosez de sauce, remuez et laissez reposer de 1 à 2 h. Au moment de servir, ajoutez le reste des herbes et mélangez de nouveau. Dressez dans des assiettes ou servez dans le saladier."
+        ]
+      },
+      "before": {
+        "title": "Nouilles soja aux aubergines et à la mangue",
+        "ingredients": [
+          {
+            "section": "",
+            "text": "12 cl vinaigre de riz"
+          },
+          {
+            "section": "",
+            "text": "40 g sucre en poudre"
+          },
+          {
+            "section": "",
+            "text": "½ tsp sel"
+          },
+          {
+            "section": "",
+            "text": "2 clove ail écrasées"
+          },
+          {
+            "section": "",
+            "text": "/½ piment rouge frais émincé"
+          },
+          {
+            "section": "",
+            "text": "1 tsp huile de sésame grillé"
+          },
+          {
+            "section": "",
+            "text": "1 citron vert pour le zeste (râpé)"
+          },
+          {
+            "section": "",
+            "text": "et le jus"
+          },
+          {
+            "section": "",
+            "text": "2 aubergines coupées en tranches de 2 cm d'épaisseur"
+          },
+          {
+            "section": "",
+            "text": "250 g nouilles soba"
+          },
+          {
+            "section": "",
+            "text": "1 grosse mangue mûre coupée en dés de 1 cm de côté ou en lanières de 5 mm d'épaisseur"
+          },
+          {
+            "section": "",
+            "text": "40 g feuilles de basilic hachées (si vous utilisez du basilic thaï, diminuez la quantité)"
+          },
+          {
+            "section": "",
+            "text": "40 g feuilles de coriandre ciselées"
+          },
+          {
+            "section": "",
+            "text": "½ oignon rouge émincé très finement"
+          },
+          {
+            "section": "",
+            "text": "Huile de tournesol"
+          }
+        ],
+        "steps": [
+          "Préparez d'abord la sauce. Dans une petite casserole, faites chauffer pendant 1 min sur feu doux le vinaigre, le sucre et le sel.",
+          "Quand le sucre a fondu, retirez la casserole du feu et ajoutez l'ail, le piment et l'huile de sésame. Laissez refroidir avant d'incorporer le zeste et le jus du citron vert.",
+          "Faites chauffer environ 20 cl d'huile de tournesol dans une grande poêle et faites frire les aubergines en trois ou quatre fois. Quand elles sont bien cuites, mettez-les dans une passoire, saupoudrez-les généreusement de sel et laissez-les s'égoutter.",
+          "Faites cuire les nouilles de 5 à 8 min dans un grand volume d'eau bouillante salée, en remuant de temps en temps. Elles doivent rester un peu fermes. Égouttez-les et rafraîchissez-les sous l'eau froide, puis laissez-les sécher sur un torchon.",
+          "Mélangez, dans un saladier, les nouilles, la mangue, l'aubergine, la moitié des herbes et l'oignon. Arrosez de sauce, remuez et laissez reposer de 1 à 2 h. Au moment de servir, ajoutez le reste des herbes et mélangez de nouveau. Dressez dans des assiettes ou servez dans le saladier."
+        ]
+      },
+      "after": {
+        "title": "Nouilles soja aux aubergines et à la mangue",
+        "ingredients": [
+          {
+            "section": "",
+            "text": "12 cl vinaigre de riz"
+          },
+          {
+            "section": "",
+            "text": "40 g sucre en poudre"
+          },
+          {
+            "section": "",
+            "text": "½ tsp sel"
+          },
+          {
+            "section": "",
+            "text": "2 clove ail écrasées"
+          },
+          {
+            "section": "",
+            "text": "/½ piment rouge frais émincé"
+          },
+          {
+            "section": "",
+            "text": "1 tsp huile de sésame grillé"
+          },
+          {
+            "section": "",
+            "text": "1 citron vert pour le zeste (râpé) et le jus"
+          },
+          {
+            "section": "",
+            "text": "2 aubergines coupées en tranches de 2 cm d'épaisseur"
+          },
+          {
+            "section": "",
+            "text": "250 g nouilles soba"
+          },
+          {
+            "section": "",
+            "text": "1 grosse mangue mûre coupée en dés de 1 cm de côté ou en lanières de 5 mm d'épaisseur"
+          },
+          {
+            "section": "",
+            "text": "40 g feuilles de basilic hachées (si vous utilisez du basilic thaï, diminuez la quantité)"
+          },
+          {
+            "section": "",
+            "text": "40 g feuilles de coriandre ciselées"
+          },
+          {
+            "section": "",
+            "text": "½ oignon rouge émincé très finement"
+          },
+          {
+            "section": "",
+            "text": "Huile de tournesol"
+          }
+        ],
+        "steps": [
+          "Préparez d'abord la sauce. Dans une petite casserole, faites chauffer pendant 1 min sur feu doux le vinaigre, le sucre et le sel.",
+          "Quand le sucre a fondu, retirez la casserole du feu et ajoutez l'ail, le piment et l'huile de sésame. Laissez refroidir avant d'incorporer le zeste et le jus du citron vert.",
+          "Faites chauffer environ 20 cl d'huile de tournesol dans une grande poêle et faites frire les aubergines en trois ou quatre fois. Quand elles sont bien cuites, mettez-les dans une passoire, saupoudrez-les généreusement de sel et laissez-les s'égoutter.",
+          "Faites cuire les nouilles de 5 à 8 min dans un grand volume d'eau bouillante salée, en remuant de temps en temps. Elles doivent rester un peu fermes. Égouttez-les et rafraîchissez-les sous l'eau froide, puis laissez-les sécher sur un torchon.",
+          "Mélangez, dans un saladier, les nouilles, la mangue, l'aubergine, la moitié des herbes et l'oignon. Arrosez de sauce, remuez et laissez reposer de 1 à 2 h. Au moment de servir, ajoutez le reste des herbes et mélangez de nouveau. Dressez dans des assiettes ou servez dans le saladier."
+        ]
+      }
+    },
+    {
+      "id": "mqm958h2ngy8l4",
+      "at": 1781953567526,
+      "type": "import-saved",
+      "recipeId": "mqm958gkrm54mp",
+      "source": {
+        "type": "text"
+      },
+      "imported": {
+        "title": "Chakchouka",
+        "ingredients": [
+          {
+            "section": "",
+            "text": "½ tsp graines de cumin"
+          },
+          {
+            "section": "",
+            "text": "2 gros oignons émincées"
+          },
+          {
+            "section": "",
+            "text": "2 poivrons rouges et 2 poivrons jaunes en lanières de 2 cm de largeur"
+          },
+          {
+            "section": "",
+            "text": "4 tsp sucre muscovado"
+          },
+          {
+            "section": "",
+            "text": "2 feuilles de laurier"
+          },
+          {
+            "section": "",
+            "text": "6 brins de thym hachés"
+          },
+          {
+            "section": "",
+            "text": "2 tbsp persil haché"
+          },
+          {
+            "section": "",
+            "text": "2 tbsp coriandre hachée + quelques brins ciselés pour la garniture)"
+          },
+          {
+            "section": "",
+            "text": "6 tomates mûres grossièrement hachées"
+          },
+          {
+            "section": "",
+            "text": "½ tsp stigmates de safran"
+          },
+          {
+            "section": "",
+            "text": "1 pinch poivre de Cayenne"
+          },
+          {
+            "section": "",
+            "text": "8 œufs fermiers"
+          },
+          {
+            "section": "",
+            "text": "Huile d'olive douce ou huile végétale"
+          },
+          {
+            "section": "",
+            "text": "Sel et poivre noir"
+          }
+        ],
+        "steps": [
+          "Faites griller les graines de cumin à sec pendant 2 min, dans une grande poêle. Ajoutez l'huile d'olive douce ou l'huile végétale, puis les oignons, que vous ferez revenir pendant 5 min, et enfin les poivrons, le sucre et les herbes aromatiques. Laissez cuire le tout de 5 à 10 min sur feu vif, pour que la préparation prenne une belle nuance foncée.",
+          "Ajoutez alors les tomates, le safran et le poivre de Cayenne. Salez et poivrez. Baissez le feu et laissez cuire tout doucement pendant 15 min. Allongez régulièrement la préparation avec un peu d'eau pour qu'elle garde la consistance d'une sauce épaisse. Goûtez et rectifiez l'assaisonnement si nécessaire. La saveur doit être concentrée et assez relevée. Vous pouvez préparer ce mélange a lavance.",
+          "Retirez les feuilles de laurier, puis répartissez la préparation dans 4 poêlons assez grands pour contenir chacun une généreuse portion. Réchauffez la sauce sur feu moyen, puis faites 2 trous dans la garniture de chaque poêlon et cassez délicatement 1 œuf dans chaque trou. Salez, puis couvrez hermétiquement et laissez cuire à tout petit feu de 10 à 12 min, jusqu'à ce que les œufs soient juste pris. Parsemez de coriandre et servez."
+        ]
+      }
+    },
+    {
+      "id": "mqm93f7twnof2d",
+      "at": 1781953482953,
+      "type": "import-saved",
+      "recipeId": "mqm93f73pa6w5x",
+      "source": {
+        "type": "text"
+      },
+      "imported": {
+        "title": "Tarte aux légumes grillées",
+        "ingredients": [
+          {
+            "section": "",
+            "text": "Pour 4 à 6 personnes"
+          },
+          {
+            "section": "",
+            "text": "1 poivron rouge et 1 poivron jaune"
+          },
+          {
+            "section": "",
+            "text": "1 aubergine moyenne coupée en morceaux de 4 cm"
+          },
+          {
+            "section": "",
+            "text": "1 petite patate douce épluchée et coupées en cubes de 3 cm de côté"
+          },
+          {
+            "section": "",
+            "text": "1 petite courgette en cubes de 3 cm"
+          },
+          {
+            "section": "",
+            "text": "côté"
+          },
+          {
+            "section": "",
+            "text": "2 oignons moyens émincés"
+          },
+          {
+            "section": "",
+            "text": "2 feuilles de laurier"
+          },
+          {
+            "section": "",
+            "text": "300 g pâte brisée"
+          },
+          {
+            "section": "",
+            "text": "8 brins de thym"
+          },
+          {
+            "section": "",
+            "text": "120 g ricotta"
+          },
+          {
+            "section": "",
+            "text": "120 g feta"
+          },
+          {
+            "section": "",
+            "text": "7 tomates cerise coupées en deux"
+          },
+          {
+            "section": "",
+            "text": "2 œufs fermiers moyens"
+          },
+          {
+            "section": "",
+            "text": "20 cl crème double ou de crème d'Isigny (40 % MG)"
+          },
+          {
+            "section": "",
+            "text": "Huile d'olive"
+          },
+          {
+            "section": "",
+            "text": "Sel et poivre noir"
+          }
+        ],
+        "steps": [
+          "Préchauffez le four à 230 °C (th. 7-8). Avec un petit couteau, retirez le pédoncule des poivrons et grattez l'intérieur pour enlever les graines. Mettez les poivrons dans un plat allant au four, arrosez d'un filet d'huile et glissez le plat sur une grille, en haut du four. Mélangez les aubergines avec 4 cuil à soupe d'huile d'olive, un peu de sel et de poivre. Etalez-les dans un grand plat de cuisson et enfournez-les sur une grille, en dessous des poivrons.",
+          "Au bout de 12 min, ajoutez les morceaux de patate douce et remuez délicatement. Faites de même avec la courgette 12 min plus tard, en comptant cette fois de 10 à 12 min de cuisson.",
+          "À ce stade, les poivrons doivent être bien grillés et les autres légumes cuits à point. Sortez les deux plats du four et baissez la température à 160°C (th. 5-6). Couvrez les poivrons d'une feuille de papier d'aluminium et laissez-les refroidir, puis pelez-les et coupez-les en lanières.",
+          "Pendant que les légumes rôtissent, faites chauffer 2 cuil. à soupe d'huile d'olive dans une poêle sur feu moyen et faites-y revenir les oignons avec le laurier et un peu de sel pendant 25 min, en remuant de temps en temps. Quand ils sont bien colorés et fondants, retirez la poêle du feu et jetez les feuilles de laurier.",
+          "Graissez un moule à tarte à fond amovible de 22 cm de diamètre.",
+          "Etalez la pâte sur 3 mm d'épaisseur et formez un disque assez grand pour déborder un peu du haut du moule. Mettez la pâte en place dans le moule, en la laissant déborder à l'extérieur, posez, au fond, un disque de papier sulfurisé et couvrez de haricots secs.",
+          "Faites cuire la pâte à blanc pendant 30 min. Retirez les haricots et le papier sulfurisé, puis remettez la pâte pour 10 à 15 min dans le four pour qu'elle dore. Sortez-la du four et laissez-la refroidir un peu.",
+          "Répartissez uniformément, sur le fond de tarte, les oignons, puis les légumes grillés. Parsemez avec la moitié du thym effeuillé, puis garnissez avec la feta et la ricotta avant de disposer les tomates, face coupée vers le haut.",
+          "Fouettez les œufs et la crème avec un peu de sel et de poivre.",
+          "Versez délicatement ce mélange sur les légumes sans recouvrir complètement les tomates et les morceaux de fromage.",
+          "Saupoudrez avec le reste du thym. Enfournez pour 35 à 45 min, jusqu'à ce que l'ensemble soit cuit et doré. Sortez la tarte et laissez-la reposer pendant au moins 10 min avant de casser l'excédent de pâte. Démoulez et servez."
+        ]
+      }
+    },
+    {
+      "id": "mqm90g27vi1zy7",
+      "at": 1781953344079,
+      "type": "import-corrected",
+      "recipeId": "mqm90g1thha0zy",
+      "source": {
+        "type": "text"
+      },
+      "imported": {
+        "title": "Pasted recipe",
+        "ingredients": [
+          {
+            "section": "",
+            "text": "½ oignon rouge finement haché"
+          },
+          {
+            "section": "",
+            "text": "1 petit poivron rouge et 1 petit poivron jaune coupés en lanières"
+          },
+          {
+            "section": "",
+            "text": "½ bulbe de fenouil en fines lamelles"
+          },
+          {
+            "section": "",
+            "text": "2 clove ail écrasées"
+          },
+          {
+            "section": "",
+            "text": "2 feuilles de laurier"
+          },
+          {
+            "section": "",
+            "text": "¼ cuil. à café de paprika fumé"
+          },
+          {
+            "section": "",
+            "text": "½ tsp curcuma moulu"
+          },
+          {
+            "section": "",
+            "text": "¼ cuil. à café de poivre de Cayenne"
+          },
+          {
+            "section": "",
+            "text": "150 g riz de Calasparra (ou un autre riz à paella)"
+          },
+          {
+            "section": "",
+            "text": "10 cl xeres de bonne qualité"
+          },
+          {
+            "section": "",
+            "text": "1 tsp stigmates de safran"
+          },
+          {
+            "section": "",
+            "text": "45 cl bouillon de légumes brûlant"
+          },
+          {
+            "section": "",
+            "text": "200 g fèves écossées (fraîches ou surgelées)"
+          },
+          {
+            "section": "",
+            "text": "12 mini-tomates allongées coupées en deux"
+          },
+          {
+            "section": "",
+            "text": "5 cours d'artichaut grillés conservés dans l'huile, égouttés et détaillés en quartiers"
+          },
+          {
+            "section": "",
+            "text": "15 olives de Kalamata dénoyautées, écrasées ou coupées en deux 2 cuil. à soupe de persil haché"
+          },
+          {
+            "section": "",
+            "text": "grossièrement"
+          },
+          {
+            "section": "",
+            "text": "4 quartiers de citron"
+          },
+          {
+            "section": "",
+            "text": "Huile d'olive"
+          },
+          {
+            "section": "",
+            "text": "Sel"
+          }
+        ],
+        "steps": [
+          "Faites chauffer 3 cuil. à soupe d'huile d'olive dans une poêle à paella ou dans une grande poêle peu profonde et faites revenir l'oignon pendant 5 min. Ajoutez les poivrons et le fenouil, que vous laisserez cuire pendant environ 6 min sur feu moyen, jusqu'à ce qu'ils soient tendres et légèrement dorés. Terminez avec l'ail et prolongez la cuisson de 1 min.",
+          "Ajoutez, dans la poêle, le laurier, le paprika, le curcuma et le poivre de Cayenne, puis remuez. Versez le riz en pluie et mélangez pendant 2 min avant d'incorporer le xeres et le safran. Laissez bouillir pendant 1 min, puis ajoutez le bouillon et un peu de sel.",
+          "Baissez le feu et laissez mijoter tout doucement pendant 20 min environ, sans couvrir ni remuer: le riz doit absorber presque tout le liquide.",
+          "Pendant ce temps, ébouillantez les fèves, puis égouttez-les au bout de 1 min et laissez-les refroidir. Pressez ensuite délicatement chaque graine pour ôter la peau.",
+          "Retirez la poêle du feu. Goûtez et ajoutez un peu de sel si le mélange vous paraît fade, mais sans remuer le riz ni les légumes.",
+          "Disposez les tomates, les artichauts et les fèves sur le riz, puis couvrez hermétiquement avec du papier d'aluminium et laissez reposer pendant 10 min.",
+          "Ôtez le papier d'aluminium. Répartissez les olives et le persil sur la paella. Servez avec des quartiers de citron."
+        ]
+      },
+      "before": {
+        "title": "Pasted recipe",
+        "ingredients": [
+          {
+            "section": "",
+            "text": "½ oignon rouge finement haché"
+          },
+          {
+            "section": "",
+            "text": "1 petit poivron rouge et 1 petit poivron jaune coupés en lanières"
+          },
+          {
+            "section": "",
+            "text": "½ bulbe de fenouil en fines lamelles"
+          },
+          {
+            "section": "",
+            "text": "2 clove ail écrasées"
+          },
+          {
+            "section": "",
+            "text": "2 feuilles de laurier"
+          },
+          {
+            "section": "",
+            "text": "¼ cuil. à café de paprika fumé"
+          },
+          {
+            "section": "",
+            "text": "½ tsp curcuma moulu"
+          },
+          {
+            "section": "",
+            "text": "¼ cuil. à café de poivre de Cayenne"
+          },
+          {
+            "section": "",
+            "text": "150 g riz de Calasparra (ou un autre riz à paella)"
+          },
+          {
+            "section": "",
+            "text": "10 cl xeres de bonne qualité"
+          },
+          {
+            "section": "",
+            "text": "1 tsp stigmates de safran"
+          },
+          {
+            "section": "",
+            "text": "45 cl bouillon de légumes brûlant"
+          },
+          {
+            "section": "",
+            "text": "200 g fèves écossées (fraîches ou surgelées)"
+          },
+          {
+            "section": "",
+            "text": "12 mini-tomates allongées coupées en deux"
+          },
+          {
+            "section": "",
+            "text": "5 cours d'artichaut grillés conservés dans l'huile, égouttés et détaillés en quartiers"
+          },
+          {
+            "section": "",
+            "text": "15 olives de Kalamata dénoyautées, écrasées ou coupées en deux 2 cuil. à soupe de persil haché"
+          },
+          {
+            "section": "",
+            "text": "grossièrement"
+          },
+          {
+            "section": "",
+            "text": "4 quartiers de citron"
+          },
+          {
+            "section": "",
+            "text": "Huile d'olive"
+          },
+          {
+            "section": "",
+            "text": "Sel"
+          }
+        ],
+        "steps": [
+          "Faites chauffer 3 cuil. à soupe d'huile d'olive dans une poêle à paella ou dans une grande poêle peu profonde et faites revenir l'oignon pendant 5 min. Ajoutez les poivrons et le fenouil, que vous laisserez cuire pendant environ 6 min sur feu moyen, jusqu'à ce qu'ils soient tendres et légèrement dorés. Terminez avec l'ail et prolongez la cuisson de 1 min.",
+          "Ajoutez, dans la poêle, le laurier, le paprika, le curcuma et le poivre de Cayenne, puis remuez. Versez le riz en pluie et mélangez pendant 2 min avant d'incorporer le xeres et le safran. Laissez bouillir pendant 1 min, puis ajoutez le bouillon et un peu de sel.",
+          "Baissez le feu et laissez mijoter tout doucement pendant 20 min environ, sans couvrir ni remuer: le riz doit absorber presque tout le liquide.",
+          "Pendant ce temps, ébouillantez les fèves, puis égouttez-les au bout de 1 min et laissez-les refroidir. Pressez ensuite délicatement chaque graine pour ôter la peau.",
+          "Retirez la poêle du feu. Goûtez et ajoutez un peu de sel si le mélange vous paraît fade, mais sans remuer le riz ni les légumes.",
+          "Disposez les tomates, les artichauts et les fèves sur le riz, puis couvrez hermétiquement avec du papier d'aluminium et laissez reposer pendant 10 min.",
+          "Ôtez le papier d'aluminium. Répartissez les olives et le persil sur la paella. Servez avec des quartiers de citron."
+        ]
+      },
+      "after": {
+        "title": "Paella aux légumes",
+        "ingredients": [
+          {
+            "section": "",
+            "text": "½ oignon rouge finement haché"
+          },
+          {
+            "section": "",
+            "text": "1 petit poivron rouge et 1 petit poivron jaune coupés en lanières"
+          },
+          {
+            "section": "",
+            "text": "½ bulbe de fenouil en fines lamelles"
+          },
+          {
+            "section": "",
+            "text": "2 clove ail écrasées"
+          },
+          {
+            "section": "",
+            "text": "2 feuilles de laurier"
+          },
+          {
+            "section": "",
+            "text": "¼ tsp paprika fumé"
+          },
+          {
+            "section": "",
+            "text": "½ tsp curcuma moulu"
+          },
+          {
+            "section": "",
+            "text": "¼ tsp poivre de Cayenne"
+          },
+          {
+            "section": "",
+            "text": "150 g riz de Calasparra (ou un autre riz à paella)"
+          },
+          {
+            "section": "",
+            "text": "10 cl xeres de bonne qualité"
+          },
+          {
+            "section": "",
+            "text": "1 tsp stigmates de safran"
+          },
+          {
+            "section": "",
+            "text": "45 cl bouillon de légumes brûlant"
+          },
+          {
+            "section": "",
+            "text": "200 g fèves écossées (fraîches ou surgelées)"
+          },
+          {
+            "section": "",
+            "text": "12 mini-tomates allongées coupées en deux"
+          },
+          {
+            "section": "",
+            "text": "5 cours d'artichaut grillés conservés dans l'huile, égouttés et détaillés en quartiers"
+          },
+          {
+            "section": "",
+            "text": "15 olives de Kalamata dénoyautées, écrasées ou coupées en deux 2 cuil. à soupe de persil haché grossièrement"
+          },
+          {
+            "section": "",
+            "text": "4 quartiers de citron"
+          },
+          {
+            "section": "",
+            "text": "Huile d'olive"
+          },
+          {
+            "section": "",
+            "text": "Sel"
+          }
+        ],
+        "steps": [
+          "Faites chauffer 3 cuil. à soupe d'huile d'olive dans une poêle à paella ou dans une grande poêle peu profonde et faites revenir l'oignon pendant 5 min. Ajoutez les poivrons et le fenouil, que vous laisserez cuire pendant environ 6 min sur feu moyen, jusqu'à ce qu'ils soient tendres et légèrement dorés. Terminez avec l'ail et prolongez la cuisson de 1 min.",
+          "Ajoutez, dans la poêle, le laurier, le paprika, le curcuma et le poivre de Cayenne, puis remuez. Versez le riz en pluie et mélangez pendant 2 min avant d'incorporer le xeres et le safran. Laissez bouillir pendant 1 min, puis ajoutez le bouillon et un peu de sel.",
+          "Baissez le feu et laissez mijoter tout doucement pendant 20 min environ, sans couvrir ni remuer: le riz doit absorber presque tout le liquide.",
+          "Pendant ce temps, ébouillantez les fèves, puis égouttez-les au bout de 1 min et laissez-les refroidir. Pressez ensuite délicatement chaque graine pour ôter la peau.",
+          "Retirez la poêle du feu. Goûtez et ajoutez un peu de sel si le mélange vous paraît fade, mais sans remuer le riz ni les légumes.",
+          "Disposez les tomates, les artichauts et les fèves sur le riz, puis couvrez hermétiquement avec du papier d'aluminium et laissez reposer pendant 10 min.",
+          "Ôtez le papier d'aluminium. Répartissez les olives et le persil sur la paella. Servez avec des quartiers de citron."
+        ]
+      }
+    },
+    {
+      "id": "mqm8mc5pl0avgk",
+      "at": 1781952685837,
+      "type": "import-corrected",
+      "recipeId": "mqm8mc3znuoh3p",
+      "source": {
+        "type": "photo"
+      },
+      "imported": {
+        "title": "Ratatouille",
+        "ingredients": [
+          {
+            "section": "",
+            "text": "| Pour 4 personnes"
+          },
+          {
+            "section": "",
+            "text": "11 cl huile de tournesol"
+          },
+          {
+            "section": "",
+            "text": "| 2 petits oignons coupés en morceaux"
+          },
+          {
+            "section": "",
+            "text": "3 cm de côté"
+          },
+          {
+            "section": "",
+            "text": "| 4 gousses d'ail émincées"
+          },
+          {
+            "section": "",
+            "text": "| 12 piment vert frais émincé"
+          },
+          {
+            "section": "",
+            "text": "| | 2 petits poivrons rouges en carrés"
+          },
+          {
+            "section": "",
+            "text": "| de 3 cm de côté"
+          },
+          {
+            "section": "",
+            "text": "| | Va petite courge butternut pelée"
+          },
+          {
+            "section": "",
+            "text": "Il et coupée en cubes de 3 cm de côté"
+          },
+          {
+            "section": "",
+            "text": "If 1 petit panais épluché et coupé en cube"
+          },
+          {
+            "section": "",
+            "text": "| | de 3 cm de côté"
+          },
+          {
+            "section": "",
+            "text": "| 200 g de haricots verts parés"
+          },
+          {
+            "section": "",
+            "text": "| 1 courgette moyenne en morce:"
+          },
+          {
+            "section": "",
+            "text": "| | de 3 cm environ"
+          },
+          {
+            "section": "",
+            "text": "/2 grosse aubergine épluchée et"
+          },
+          {
+            "section": "",
+            "text": "| en morceaux de 3 cm environ"
+          },
+          {
+            "section": "",
+            "text": "Il 1 petite pomme de terre épluchée"
+          },
+          {
+            "section": "",
+            "text": "| et coupée en cubes de 3 cm"
+          },
+          {
+            "section": "",
+            "text": "| de côté environ"
+          },
+          {
+            "section": "",
+            "text": "(| 2 tomates moyennes pelées et hachées"
+          },
+          {
+            "section": "",
+            "text": "| | Y2 cuil. à soupe de sucre en poudre"
+          },
+          {
+            "section": "",
+            "text": "| 1 cuil. à soupe de concentré de tomate"
+          },
+          {
+            "section": "",
+            "text": "| Coriandre ciselée pour finir (facultatif)"
+          },
+          {
+            "section": "",
+            "text": "| Huile de tournesol"
+          },
+          {
+            "section": "",
+            "text": "; | | Sel et poivre noir"
+          },
+          {
+            "section": "",
+            "text": "Il |"
+          },
+          {
+            "section": "",
+            "text": "; | il"
+          }
+        ],
+        "steps": [
+          "Versez 3 cuil. à soupe d'huile de tournesol dans une casserole à fond épais ou dans une cocotte et faites chauffer sur feu",
+          "; moyen. Faites ensuite revenir les oignons dans l'huile pendant",
+          "5 min, en remuant de temps en temps. Ajoutez l'ail, le piment et les poivrons, que vous ferez également revenir pendant 5 hid",
+          "Tern inez avec la courge et le panais, qui doivent eux aussi cuire endant 5 min.",
+          "ec u e écumoire, sortez les légumes de la casserole et réservez- lans un récipient, en laissant le plus possible d'huile dans sserole. Ajoutez 2 cuil. à soupe d'huile de tournesol et laissez ffer de nouveau pendant quelques minutes avant d'ajouter",
+          "€ ico ts verts, la courgette et l'aubergine. Faites revenir",
+          "SQL mes pendant 5 min.",
+          "ez ¢ ans la casserole la première tournée de légumes,",
+          "7 la pomme de terre, les tomates, le sucre et le concentré e. Salez et poivrez généreusement. Remuez bien, puis e assez d'eau pour recouvrir à moitié les légumes.",
+          "ter d oucement pendant 30 min à couvert. Goûtez et rectifiez l'assaisonnement si nécessaire.",
+          "¢ à 200 °C (th. 6-7). Avec l'écumoire, sortez jumes de la casserole et étalez-les dans",
+          "Ur une épaisseur de 2 à 3 cm. Arrosez-les nournez pour 30 min. À la sortie t étre fondants et le liquide de cuisson",
+          ". Saupoudrez de coriandre ciselée it à la vapeur."
+        ]
+      },
+      "before": {
+        "title": "Ratatouille",
+        "ingredients": [
+          {
+            "section": "",
+            "text": "| Pour 4 personnes"
+          },
+          {
+            "section": "",
+            "text": "11 cl huile de tournesol"
+          },
+          {
+            "section": "",
+            "text": "| 2 petits oignons coupés en morceaux"
+          },
+          {
+            "section": "",
+            "text": "3 cm de côté"
+          },
+          {
+            "section": "",
+            "text": "| 4 gousses d'ail émincées"
+          },
+          {
+            "section": "",
+            "text": "| 12 piment vert frais émincé"
+          },
+          {
+            "section": "",
+            "text": "| | 2 petits poivrons rouges en carrés"
+          },
+          {
+            "section": "",
+            "text": "| de 3 cm de côté"
+          },
+          {
+            "section": "",
+            "text": "| | Va petite courge butternut pelée"
+          },
+          {
+            "section": "",
+            "text": "Il et coupée en cubes de 3 cm de côté"
+          },
+          {
+            "section": "",
+            "text": "If 1 petit panais épluché et coupé en cube"
+          },
+          {
+            "section": "",
+            "text": "| | de 3 cm de côté"
+          },
+          {
+            "section": "",
+            "text": "| 200 g de haricots verts parés"
+          },
+          {
+            "section": "",
+            "text": "| 1 courgette moyenne en morce:"
+          },
+          {
+            "section": "",
+            "text": "| | de 3 cm environ"
+          },
+          {
+            "section": "",
+            "text": "/2 grosse aubergine épluchée et"
+          },
+          {
+            "section": "",
+            "text": "| en morceaux de 3 cm environ"
+          },
+          {
+            "section": "",
+            "text": "Il 1 petite pomme de terre épluchée"
+          },
+          {
+            "section": "",
+            "text": "| et coupée en cubes de 3 cm"
+          },
+          {
+            "section": "",
+            "text": "| de côté environ"
+          },
+          {
+            "section": "",
+            "text": "(| 2 tomates moyennes pelées et hachées"
+          },
+          {
+            "section": "",
+            "text": "| | Y2 cuil. à soupe de sucre en poudre"
+          },
+          {
+            "section": "",
+            "text": "| 1 cuil. à soupe de concentré de tomate"
+          },
+          {
+            "section": "",
+            "text": "| Coriandre ciselée pour finir (facultatif)"
+          },
+          {
+            "section": "",
+            "text": "| Huile de tournesol"
+          },
+          {
+            "section": "",
+            "text": "; | | Sel et poivre noir"
+          },
+          {
+            "section": "",
+            "text": "Il |"
+          },
+          {
+            "section": "",
+            "text": "; | il"
+          }
+        ],
+        "steps": [
+          "Versez 3 cuil. à soupe d'huile de tournesol dans une casserole à fond épais ou dans une cocotte et faites chauffer sur feu",
+          "; moyen. Faites ensuite revenir les oignons dans l'huile pendant",
+          "5 min, en remuant de temps en temps. Ajoutez l'ail, le piment et les poivrons, que vous ferez également revenir pendant 5 hid",
+          "Tern inez avec la courge et le panais, qui doivent eux aussi cuire endant 5 min.",
+          "ec u e écumoire, sortez les légumes de la casserole et réservez- lans un récipient, en laissant le plus possible d'huile dans sserole. Ajoutez 2 cuil. à soupe d'huile de tournesol et laissez ffer de nouveau pendant quelques minutes avant d'ajouter",
+          "€ ico ts verts, la courgette et l'aubergine. Faites revenir",
+          "SQL mes pendant 5 min.",
+          "ez ¢ ans la casserole la première tournée de légumes,",
+          "7 la pomme de terre, les tomates, le sucre et le concentré e. Salez et poivrez généreusement. Remuez bien, puis e assez d'eau pour recouvrir à moitié les légumes.",
+          "ter d oucement pendant 30 min à couvert. Goûtez et rectifiez l'assaisonnement si nécessaire.",
+          "¢ à 200 °C (th. 6-7). Avec l'écumoire, sortez jumes de la casserole et étalez-les dans",
+          "Ur une épaisseur de 2 à 3 cm. Arrosez-les nournez pour 30 min. À la sortie t étre fondants et le liquide de cuisson",
+          ". Saupoudrez de coriandre ciselée it à la vapeur."
+        ]
+      },
+      "after": {
+        "title": "Ratatouille",
+        "ingredients": [
+          {
+            "section": "",
+            "text": "11 cl huile de tournesol"
+          },
+          {
+            "section": "",
+            "text": "2 petits oignons coupés en morceaux 3 cm de côté"
+          },
+          {
+            "section": "",
+            "text": "4 clove ail émincées"
+          },
+          {
+            "section": "",
+            "text": "12 piment vert frais émincé"
+          },
+          {
+            "section": "",
+            "text": "2 petits poivrons rouges en carrés de 3 cm de côté"
+          },
+          {
+            "section": "",
+            "text": "Va petite courge butternut pelée et coupée en cubes de 3 cm de côté"
+          },
+          {
+            "section": "",
+            "text": "1 petit panais épluché et coupé en cube de 3 cm de côté"
+          },
+          {
+            "section": "",
+            "text": "200 g haricots verts parés"
+          },
+          {
+            "section": "",
+            "text": "1 courgette moyenne en morceau de 3 cm environ"
+          },
+          {
+            "section": "",
+            "text": "2 grosse aubergine épluchée et en morceaux de 3 cm environ"
+          },
+          {
+            "section": "",
+            "text": "1 petite pomme de terre épluchée et coupée en cubes de 3 cm de côté environ"
+          },
+          {
+            "section": "",
+            "text": "2 tomates moyennes pelées et hachées"
+          },
+          {
+            "section": "",
+            "text": "2 cuil. à soupe de sucre en poudre"
+          },
+          {
+            "section": "",
+            "text": "1 cuil. à soupe de concentré de tomate"
+          },
+          {
+            "section": "",
+            "text": "Coriandre ciselée pour finir (facultatif)"
+          },
+          {
+            "section": "",
+            "text": "Huile de tournesol"
+          },
+          {
+            "section": "",
+            "text": "Sel et poivre noir"
+          }
+        ],
+        "steps": [
+          "Versez 3 cuil. à soupe d'huile de tournesol dans une casserole à fond épais ou dans une cocotte et faites chauffer sur feu moyen. Faites ensuite revenir les oignons dans l'huile pendant 5 min, en remuant de temps en temps. Ajoutez l'ail, le piment et les poivrons, que vous ferez également revenir pendant 5 min. Terminez avec la courge et le panais, qui doivent eux aussi cuire pendant 5 min.",
+          "Avec un écumoire, sortez les légumes de la casserole et réservez-les dans un récipient, en laissant le plus possible d'huile dans la casserole. Ajoutez 2 cuil. à soupe d'huile de tournesol et laissez chauffer de nouveau pendant quelques minutes avant d'ajouter les haricots verts, la courgette et l'aubergine. Faites revenir ces légumes pendant 5 min.",
+          "Remettez dans la casserole la première tournée de légumes, ajouter la pomme de terre, les tomates, le sucre et le concentré de tomate. Salez et poivrez généreusement. Remuez bien, puis versez assez d'eau pour recouvrir à moitié les légumes. Laissez mijoter doucement pendant 30 min à couvert. Goûtez et rectifiez l'assaisonnement si nécessaire.",
+          "Préchauffez le four à 200 °C (th. 6-7). Avec l'écumoire, sortez délicatement les legumes de la casserole et étalez-les dans un grand plat d’une épaisseur de 2 à 3 cm. Arrosez-les de liquide de cuisson et enfournez pour 30 min. À la sortie les légumes doivent être fondants et le liquide de cuisson presque totalement évaporé. Saupoudrez de coriandre ciselée et servez avec du riz blanc cuit à la vapeur."
+        ]
+      }
+    }
+  ]
+}
