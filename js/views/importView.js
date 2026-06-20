@@ -125,8 +125,9 @@ function textForm() {
 }
 
 function photoForm() {
-  const file = h('input', { type: 'file', accept: 'image/*', capture: 'environment', class: 'hidden' });
-  const btn = h('button', { class: 'btn btn--primary', onclick: () => file.click() }, '📷 Choose photo');
+  // No `capture` attribute: lets the OS offer both Camera and Photo Library.
+  const file = h('input', { type: 'file', accept: 'image/*', class: 'hidden' });
+  const btn = h('button', { class: 'btn btn--primary', onclick: () => file.click() }, '📷 Take or choose photo');
   const status = h('div', { class: 'muted', style: 'margin-top:8px;font-size:0.85rem' });
   file.onchange = async () => {
     const f = file.files[0];
