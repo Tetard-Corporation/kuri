@@ -3,6 +3,14 @@ import { store } from '../store.js';
 import { h, setTopbar, toast, confirmDialog, modal, escapeHtml } from '../ui.js';
 import { navigate, back } from '../router.js';
 import { formatQty } from '../parse.js';
+import { produceStatus, monthName } from '../seasonal.js';
+
+// Small "out of season" marker for a fruit/vegetable ingredient, or null.
+export function seasonMarker(name) {
+  const st = produceStatus(name);
+  if (!st || st.inSeason) return null;
+  return h('span', { class: 'season-tag', title: `Hors saison en ${monthName(new Date().getMonth() + 1)}` }, '🍂 hors saison');
+}
 
 export async function recipeView({ id }, root) {
   const r = await store.getRecipe(id);
@@ -39,7 +47,8 @@ export async function recipeView({ id }, root) {
       const qty = ing.qty != null ? formatQty(ing.qty * factor) : '';
       list.append(h('li', {}, [
         h('span', { class: 'ing-qty' }, [qty, ing.unit].filter(Boolean).join(' ')),
-        h('span', { class: 'grow' }, ing.name)
+        h('span', { class: 'grow' }, ing.name),
+        seasonMarker(ing.name)
       ]));
     });
   }
