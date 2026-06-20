@@ -3,7 +3,7 @@ import { h, setTopbar, toast, modal, fileToDataURL } from '../ui.js';
 import { navigate } from '../router.js';
 import { importFromUrl, ocrImages } from '../import.js';
 import { cropImage } from '../crop.js';
-import { parseRecipeText, parseIngredientList, splitInstructions, extractServings, ingredientToString } from '../parse.js';
+import { parseIngredientList, splitInstructions, extractServings, ingredientToString } from '../parse.js';
 import { store, blankRecipe } from '../store.js';
 import { exportData } from '../backup.js';
 import { logImportCancelled, logImportSaved, recipeSnapshot } from '../feedback.js';
@@ -25,7 +25,7 @@ export async function importView(_params, root) {
     section('🌐 From a website', 'Paste a recipe URL. We read the page’s structured recipe data when available.', [
       urlForm()
     ]),
-    section('📝 Paste text', 'From an Instagram caption, a note, or a message. We’ll split ingredients and steps.', [
+    section('📝 Paste text', 'From an Instagram caption, a note, or a message. Paste ingredients and method into the two boxes, with an optional cover photo.', [
       textForm()
     ]),
     section('📷 From photos', 'Add photos of the ingredients and the instructions separately (camera or gallery). Text is read on-device in French & English.', [
@@ -113,16 +113,63 @@ function urlForm() {
   return h('div', { class: 'row', style: 'gap:8px' }, [h('div', { class: 'grow' }, inp), btn]);
 }
 
+// Reusable optional cover-photo picker. Returns { field, get cover }.
+function coverPhotoPicker() {
+  let cover = '';
+  const input = h('input', { type: 'file', accept: 'image/*', class: 'hidden' });
+  const field = h('div', { class: 'field' });
+  function render() {
+    field.innerHTML = '';
+    field.append(h('label', {}, 'Cover photo (optional)'));
+    if (cover) {
+      field.append(h('div', { class: 'row', style: 'gap:10px;align-items:stretch' }, [
+        h('div', { style: `flex:1;height:120px;border-radius:12px;background:#0001 center/cover no-repeat;background-image:url("${cover}")` }),
+        h('button', { class: 'btn btn--sm', onclick: () => { cover = ''; render(); } }, '✕ Remove')
+      ]));
+    } else {
+      field.append(h('button', { class: 'btn btn--block', onclick: () => input.click() }, '🖼️ Add cover photo'));
+    }
+    field.append(input);
+  }
+  input.onchange = async () => {
+    if (input.files[0]) cover = await fileToDataURL(input.files[0], 1280, 0.85);
+    input.value = '';
+    render();
+  };
+  render();
+  return { field, get cover() { return cover; } };
+}
+
 function textForm() {
-  const ta = h('textarea', { rows: 6, placeholder: 'Paste the recipe text here…' });
-  const btn = h('button', { class: 'btn btn--primary', style: 'margin-top:8px', onclick: () => {
-    const text = ta.value.trim();
-    if (text.length < 10) { toast('Paste a bit more text'); return; }
-    const parsed = parseRecipeText(text);
-    parsed.source = { type: 'text' };
+  const titleInput = h('input', { type: 'text', placeholder: 'Recipe name (optional)' });
+  const coverP = coverPhotoPicker();
+  const ingTa = h('textarea', { rows: 5, placeholder: 'One ingredient per line.\nUse "# Sauce" to start a group.' });
+  const stepTa = h('textarea', { rows: 6, placeholder: 'The method — one step per line, or paste a paragraph.' });
+  const btn = h('button', { class: 'btn btn--primary btn--block', style: 'margin-top:6px', onclick: run }, 'Add recipe');
+
+  function run() {
+    const ingText = ingTa.value.trim();
+    const stepText = stepTa.value.trim();
+    if (ingText.length < 3 && stepText.length < 3) { toast('Add some ingredients or steps'); return; }
+    const parsed = {
+      title: titleInput.value.trim() || 'Pasted recipe',
+      ingredients: parseIngredientList(ingText),
+      steps: splitInstructions(stepText),
+      image: coverP.cover || '',
+      source: { type: 'text' }
+    };
+    const servings = extractServings(ingText);
+    if (servings) parsed.servings = servings;
     preview(parsed);
-  } }, 'Parse text');
-  return h('div', {}, [ta, btn]);
+  }
+
+  return h('div', {}, [
+    h('div', { class: 'field' }, [h('label', {}, 'Recipe name'), titleInput]),
+    coverP.field,
+    h('div', { class: 'field' }, [h('label', {}, 'Ingredients'), ingTa]),
+    h('div', { class: 'field' }, [h('label', {}, 'Instructions'), stepTa]),
+    btn
+  ]);
 }
 
 function photoForm() {
@@ -134,28 +181,7 @@ function photoForm() {
   const status = h('div', { class: 'muted', style: 'margin-top:10px;font-size:0.85rem' });
 
   // Optional cover photo (not OCR'd — used only as the recipe image).
-  let cover = '';
-  const coverInput = h('input', { type: 'file', accept: 'image/*', class: 'hidden' });
-  const coverField = h('div', { class: 'field' });
-  function renderCover() {
-    coverField.innerHTML = '';
-    coverField.append(h('label', {}, 'Cover photo (optional)'));
-    if (cover) {
-      coverField.append(h('div', { class: 'row', style: 'gap:10px;align-items:stretch' }, [
-        h('div', { style: `flex:1;height:120px;border-radius:12px;background:#0001 center/cover no-repeat;background-image:url("${cover}")` }),
-        h('button', { class: 'btn btn--sm', onclick: () => { cover = ''; renderCover(); } }, '✕ Remove')
-      ]));
-    } else {
-      coverField.append(h('button', { class: 'btn btn--block', onclick: () => coverInput.click() }, '🖼️ Add cover photo'));
-    }
-    coverField.append(coverInput);
-  }
-  coverInput.onchange = async () => {
-    if (coverInput.files[0]) cover = await fileToDataURL(coverInput.files[0], 1280, 0.85);
-    coverInput.value = '';
-    renderCover();
-  };
-  renderCover();
+  const coverP = coverPhotoPicker();
 
   function bucket(label, arr) {
     const gallery = h('div', { class: 'photo-gallery' });
@@ -212,7 +238,7 @@ function photoForm() {
         title: titleInput.value.trim() || 'Imported recipe',
         ingredients,
         steps,
-        image: cover || ingPhotos[0] || stepPhotos[0] || '',
+        image: coverP.cover || ingPhotos[0] || stepPhotos[0] || '',
         source: { type: 'photo' }
       };
       if (servings) parsed.servings = servings;
@@ -228,7 +254,7 @@ function photoForm() {
 
   return h('div', {}, [
     h('div', { class: 'field' }, [h('label', {}, 'Recipe name'), titleInput]),
-    coverField,
+    coverP.field,
     ingBucket,
     stepBucket,
     extractBtn,
