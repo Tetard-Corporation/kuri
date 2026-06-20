@@ -14,7 +14,7 @@ free on GitHub Pages.
 - 👨‍🍳 **Cook mode** — distraction-free, full-screen, step-by-step view that keeps the screen awake.
 - 🍽️ **Smart servings** — scale ingredient quantities up or down on the fly.
 - 📋 **Lists** — group recipes ("This week", "Desserts", …) plus an automatic Favorites list.
-- 🛒 **Shopping list** — pick recipes and Kuri merges their ingredients into one categorized, check-off list (e.g. `200 g + 100 g flour → 300 g flour`).
+- 🛒 **Shopping list** — pick recipes and Kuri merges their ingredients into one categorized, check-off list (e.g. `200 g + 100 g flour → 300 g flour`). Export to **Apple Reminders** (via a one-time Shortcut), Share, or Copy.
 - 📥 **Import recipes** from:
   - **a website URL** — reads schema.org/Recipe structured data when present;
   - **pasted text** — e.g. an Instagram caption or a note;
