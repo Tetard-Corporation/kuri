@@ -1,5 +1,5 @@
 // Service worker — offline-first app shell caching.
-const VERSION = 'kuri-v24';
+const VERSION = 'kuri-v25';
 const CORE = [
   './',
   './index.html',
