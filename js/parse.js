@@ -124,20 +124,46 @@ export function parseIngredientList(text) {
 // like "Pour la sauce", "For the meat", "# Sauce") into ingredient objects,
 // tagging each with the current `section`.
 export function linesToIngredients(lines) {
-  const out = [];
+  // First pass: clean lines, drop noise/headers, and merge wrapped continuation
+  // lines into the previous ingredient (e.g. "…en morceaux" + "3 cm de côté").
+  const cleaned = [];
   let section = '';
   for (const raw of lines) {
-    let line = stripLead(String(raw).replace(/\*\*/g, ''));
+    const line = stripLead(String(raw).replace(/\*\*/g, ''));
     if (!line) continue;
     const header = sectionHeaderName(line);
     if (header) { section = header; continue; }
     if (isServingLine(line) || looksLikeJunk(line)) continue; // OCR noise / serving info
-    const ing = parseIngredient(line);
-    if (!ing) continue;
-    if (section) ing.section = section;
-    out.push(ing);
+    const prev = cleaned[cleaned.length - 1];
+    if (prev && prev.section === section && isContinuationLine(line)) {
+      prev.text += ' ' + line;
+    } else {
+      cleaned.push({ section, text: line });
+    }
   }
-  return out;
+  return cleaned.map(({ section: s, text }) => {
+    const ing = parseIngredient(text);
+    if (s) ing.section = s;
+    return ing;
+  }).filter(Boolean);
+}
+
+function startsWithAmount(line) {
+  return /^(?:\d+(?:[.,]\d+)?|\d+\s*\/\s*\d+|[½⅓⅔¼¾⅕⅖⅗⅘⅙⅛⅜⅝⅞])\b/.test(line);
+}
+
+// A line that continues the previous ingredient rather than starting a new one.
+// Conservative: only clear fragments, never standalone items like "sel"/"huile".
+function isContinuationLine(line) {
+  if (startsWithAmount(line)) {
+    // A leading dimension ("3 cm de côté", "2 à 3 cm") is a continuation;
+    // a leading food amount ("200 g …") starts a new ingredient.
+    return /^\d+\s*(?:[à\-–]\s*\d+\s*)?(?:cm|mm|°)\b/i.test(line);
+  }
+  if (/^[([]/.test(line) && !startsWithAmount(line.replace(/^[([|\s]+/, ''))) return true; // "(facultatif)" but not "(| 2 tomates"
+  if (/^(?:de|du|des|d['’]|et|ou|à|au|aux|en|avec|dans|sur|sans|and|or|of|with|to|in|plus)\b/i.test(line)) return true;
+  if (/^[a-zàâäçéèêëîïôûùüœ]+(?:ment|ly)\b/i.test(line)) return true;                      // adverb: "grossièrement", "finely"
+  return false;
 }
 
 // Strip leading bullets and stray OCR symbols/quotes from a line.

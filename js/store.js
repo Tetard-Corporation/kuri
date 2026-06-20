@@ -90,7 +90,7 @@ export function blankRecipe() {
 }
 
 // Default recipes shipped with the app. Bump SEED_VERSION when this list changes.
-const SEED_VERSION = 2;
+const SEED_VERSION = 3;
 
 const DEFAULT_RECIPES = [
   {
@@ -166,27 +166,45 @@ const DEFAULT_RECIPES = [
   }
 ];
 
-// Seed the default recipes on first run, and refresh them when SEED_VERSION
-// changes. Only previously shipped defaults are replaced — the user's own
-// recipes (and any default they deleted) are left untouched.
+// Seed the bundled recipes on first run, refreshing when SEED_VERSION changes.
+// Recipes are written by their stored id (db.put), so re-seeding overwrites the
+// matching copy rather than duplicating it; the user's own recipes are kept.
 export async function seedIfEmpty() {
   const current = (await store.getMeta('seedVersion'))?.value || 0;
   if (current >= SEED_VERSION) return;
 
+  // The permanent collection lives in data/seed-recipes.json (recipes + lists).
+  let seed = null;
+  try {
+    const res = await fetch(new URL('../data/seed-recipes.json', import.meta.url));
+    if (res.ok) seed = await res.json();
+  } catch { /* offline first load — fall back below */ }
+
   const existing = await db.getAll('recipes');
-  for (const r of existing) {
-    // r.seed: our newer defaults; source.type 'sample': the original generic samples.
-    if (r.seed === true || r.source?.type === 'sample') await store.deleteRecipe(r.id);
+
+  if (seed && Array.isArray(seed.recipes) && seed.recipes.length) {
+    const ids = new Set(seed.recipes.map((r) => r.id));
+    // Drop previously shipped defaults that are no longer part of the set.
+    for (const r of existing) {
+      if ((r.seed === true || r.source?.type === 'sample') && !ids.has(r.id)) await store.deleteRecipe(r.id);
+    }
+    const now = Date.now();
+    for (const r of seed.recipes) {
+      await db.put('recipes', { ...blankRecipe(), ...r, seed: true, createdAt: r.createdAt || now, updatedAt: r.updatedAt || now });
+    }
+    for (const l of seed.lists || []) {
+      if (l && l.id) await db.put('lists', l);
+    }
+    await store.setMeta('seedVersion', SEED_VERSION);
+    return;
   }
 
-  const { parseIngredientList } = await import('./parse.js');
-  for (const r of DEFAULT_RECIPES) {
-    await store.saveRecipe({
-      ...blankRecipe(),
-      ...r,
-      ingredients: parseIngredientList(r.ingredients.join('\n')),
-      seed: true
-    });
+  // Fallback (offline first load): seed minimal inline defaults and DON'T bump
+  // the version, so the full collection is fetched on the next online load.
+  if (!existing.length) {
+    const { parseIngredientList } = await import('./parse.js');
+    for (const r of DEFAULT_RECIPES) {
+      await store.saveRecipe({ ...blankRecipe(), ...r, ingredients: parseIngredientList(r.ingredients.join('\n')), seed: true });
+    }
   }
-  await store.setMeta('seedVersion', SEED_VERSION);
 }
