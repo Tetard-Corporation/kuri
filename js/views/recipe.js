@@ -22,13 +22,22 @@ export async function recipeView({ id }, root) {
     ? h('div', { class: 'hero', style: `background-image:url("${String(r.image).replace(/"/g, '%22')}")` })
     : h('div', { class: 'hero' }, r.emoji || '🍽️');
 
-  const ingSection = h('ul', { class: 'ing-list' });
+  const ingSection = h('div', {});
   function renderIngredients() {
     const factor = servings / baseServings;
     ingSection.innerHTML = '';
+    let current = null;
+    let list = null;
     (r.ingredients || []).forEach((ing) => {
+      const sec = ing.section || '';
+      if (sec !== current || !list) {
+        if (sec) ingSection.append(h('div', { class: 'ing-group' }, sec));
+        list = h('ul', { class: 'ing-list' });
+        ingSection.append(list);
+        current = sec;
+      }
       const qty = ing.qty != null ? formatQty(ing.qty * factor) : '';
-      ingSection.append(h('li', {}, [
+      list.append(h('li', {}, [
         h('span', { class: 'ing-qty' }, [qty, ing.unit].filter(Boolean).join(' ')),
         h('span', { class: 'grow' }, ing.name)
       ]));

@@ -1,9 +1,9 @@
-# 🍳 Hostel — your offline recipe keeper
+# 🍳 Kuri — your offline recipe keeper
 
 A light, **free**, offline-first web app to store your recipes, cook them
 step-by-step, organize them into lists, and build a combined shopping list.
-A simple, no-frills alternative to apps like Kuri — runs entirely in your
-browser, hosted for free on GitHub Pages.
+A simple, no-frills recipe app — runs entirely in your browser, hosted for
+free on GitHub Pages.
 
 > Everything is stored **locally on your device** (IndexedDB). No account, no
 > server, no tracking. Use **Import → Export** to back up or move your data.
@@ -14,7 +14,7 @@ browser, hosted for free on GitHub Pages.
 - 👨‍🍳 **Cook mode** — distraction-free, full-screen, step-by-step view that keeps the screen awake.
 - 🍽️ **Smart servings** — scale ingredient quantities up or down on the fly.
 - 📋 **Lists** — group recipes ("This week", "Desserts", …) plus an automatic Favorites list.
-- 🛒 **Shopping list** — pick recipes and Hostel merges their ingredients into one categorized, check-off list (e.g. `200 g + 100 g flour → 300 g flour`).
+- 🛒 **Shopping list** — pick recipes and Kuri merges their ingredients into one categorized, check-off list (e.g. `200 g + 100 g flour → 300 g flour`).
 - 📥 **Import recipes** from:
   - **a website URL** — reads schema.org/Recipe structured data when present;
   - **pasted text** — e.g. an Instagram caption or a note;

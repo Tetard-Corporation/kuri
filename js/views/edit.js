@@ -2,7 +2,7 @@
 import { store, blankRecipe } from '../store.js';
 import { h, setTopbar, toast, fileToDataURL, confirmDialog } from '../ui.js';
 import { navigate, back } from '../router.js';
-import { parseIngredientList, ingredientToString } from '../parse.js';
+import { parseIngredientList, ingredientsToText } from '../parse.js';
 
 const EMOJIS = ['🍽️', '🍝', '🥗', '🍲', '🍛', '🥘', '🍜', '🥞', '🍳', '🌮', '🍕', '🍔', '🥪', '🍰', '🍪', '🥧', '🍚', '🐟', '🥩', '🍗'];
 
@@ -39,8 +39,8 @@ export async function editView({ id }, root) {
   const cookInput = input('text', recipe.cookTime, 'e.g. 25 min');
   const tagsInput = input('text', (recipe.tags || []).join(', '), 'comma, separated, tags');
   const ingInput = textarea(
-    (recipe.ingredients || []).map(ingredientToString).join('\n'),
-    'One ingredient per line, e.g.\n200 g spaghetti\n2 cloves garlic', 7
+    ingredientsToText(recipe.ingredients),
+    'One ingredient per line. Start a line with "# " to group, e.g.\n# Sauce\n400 g tomatoes\n# Meat\n500 g beef', 8
   );
   const stepsInput = textarea(
     (recipe.steps || []).join('\n'),

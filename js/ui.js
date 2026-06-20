@@ -38,7 +38,7 @@ export function setTopbar({ title, back = false, action = null }) {
   const titleEl = document.getElementById('topTitle');
   const backBtn = document.getElementById('backBtn');
   const actionBtn = document.getElementById('topAction');
-  titleEl.textContent = title || 'Hostel';
+  titleEl.textContent = title || 'Kuri';
   backBtn.hidden = !back;
   if (action) {
     actionBtn.hidden = false;

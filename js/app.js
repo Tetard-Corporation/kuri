@@ -1,6 +1,7 @@
 // App entry: register routes, seed sample data, start router & service worker.
 import { route, startRouter } from './router.js';
 import { seedIfEmpty } from './store.js';
+import { refreshBackupReminder } from './backup.js';
 import { recipesView } from './views/recipes.js';
 import { recipeView } from './views/recipe.js';
 import { editView } from './views/edit.js';
@@ -27,7 +28,11 @@ document.getElementById('backBtn').addEventListener('click', () => history.back(
 (async function init() {
   await seedIfEmpty();
   startRouter();
+  refreshBackupReminder();
 })();
+
+// Re-check the backup reminder whenever the user navigates (e.g. after import).
+window.addEventListener('hashchange', refreshBackupReminder);
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
