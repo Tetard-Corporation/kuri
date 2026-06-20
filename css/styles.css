@@ -351,6 +351,18 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent-soft
 @media (min-width: 520px) { .modal-back { align-items: center; } .modal { border-radius: 20px; } }
 .modal h3 { margin: 0 0 14px; }
 
+/* Photo import buckets */
+.photo-bucket { border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+.photo-gallery { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.photo-thumb {
+  position: relative; width: 64px; height: 64px; border-radius: 10px;
+  background: var(--surface-2) center/cover no-repeat; border: 1px solid var(--border);
+}
+.photo-thumb__x {
+  position: absolute; top: -7px; right: -7px; width: 22px; height: 22px; border-radius: 50%;
+  border: none; background: var(--text); color: var(--bg); font-size: 0.9rem; line-height: 1; cursor: pointer;
+}
+
 /* Spinner */
 .spinner { width: 22px; height: 22px; border: 3px solid var(--accent-soft); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; }
 @keyframes spin { to { transform: rotate(360deg); } }
