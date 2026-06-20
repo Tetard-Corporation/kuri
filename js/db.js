@@ -1,8 +1,8 @@
-// Minimal IndexedDB wrapper. Stores: recipes, lists, meta.
+// Minimal IndexedDB wrapper. Stores: recipes, lists, meta, feedback.
 // Note: the database name is kept stable (not renamed with the app) so existing
 // users keep the recipes already saved on their device. It is never shown in the UI.
 const DB_NAME = 'hostel';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 let dbPromise = null;
 
 function open() {
@@ -19,6 +19,11 @@ function open() {
       }
       if (!db.objectStoreNames.contains('meta')) {
         db.createObjectStore('meta', { keyPath: 'key' });
+      }
+      // Connector feedback: edits/corrections and cancelled imports, used to
+      // improve the import parsers. Added in DB_VERSION 2.
+      if (!db.objectStoreNames.contains('feedback')) {
+        db.createObjectStore('feedback', { keyPath: 'id' });
       }
     };
     req.onsuccess = () => resolve(req.result);

@@ -3,7 +3,7 @@ import { store } from '../store.js';
 import { h, setTopbar } from '../ui.js';
 import { navigate } from '../router.js';
 
-let filter = { q: '', tag: null };
+let filter = { q: '', tag: null, mode: 'all' };
 
 export async function recipesView(_params, root) {
   setTopbar({
@@ -21,12 +21,25 @@ export async function recipesView(_params, root) {
 
   const tags = [...new Set(recipes.flatMap((r) => r.tags || []))].sort();
 
-  const search = h('div', { class: 'searchbar' }, [
-    h('input', {
-      type: 'search', placeholder: 'Search recipes & ingredients', value: filter.q,
-      oninput: (e) => { filter.q = e.target.value; renderGrid(); }
-    })
+  const searchInput = h('input', {
+    type: 'search',
+    placeholder: filter.mode === 'ing' ? 'Ingredients you have, e.g. chicken, rice' : 'Search recipes & ingredients',
+    value: filter.q,
+    oninput: (e) => { filter.q = e.target.value; renderGrid(); }
+  });
+  const search = h('div', { class: 'searchbar' }, [searchInput]);
+
+  // Toggle between general search and "what can I cook" ingredient search.
+  const modeRow = h('div', { class: 'segmented', style: 'margin-bottom:10px' }, [
+    segBtn('All', filter.mode === 'all', () => setMode('all')),
+    segBtn('By ingredient', filter.mode === 'ing', () => setMode('ing'))
   ]);
+  function setMode(m) {
+    filter.mode = m;
+    [...modeRow.children].forEach((c, i) => c.classList.toggle('active', i === (m === 'all' ? 0 : 1)));
+    searchInput.placeholder = m === 'ing' ? 'Ingredients you have, e.g. chicken, rice' : 'Search recipes & ingredients';
+    renderGrid();
+  }
 
   const chipRow = h('div', { class: 'chips', style: 'margin-bottom:14px;overflow-x:auto' }, [
     chip('All', filter.tag === null, () => { filter.tag = null; refreshChips(); renderGrid(); }),
@@ -36,7 +49,7 @@ export async function recipesView(_params, root) {
   ]);
 
   const gridWrap = h('div', {});
-  root.append(search, chipRow, gridWrap);
+  root.append(modeRow, search, chipRow, gridWrap);
 
   function refreshChips() {
     [...chipRow.children].forEach((c, i) => {
@@ -47,18 +60,36 @@ export async function recipesView(_params, root) {
 
   function renderGrid() {
     const q = filter.q.trim().toLowerCase();
-    const matches = recipes.filter((r) => {
+    // Ingredient mode: comma/space separated terms, recipe must contain them all.
+    const terms = filter.mode === 'ing'
+      ? q.split(/[,\n]+/).map((t) => t.trim()).filter(Boolean)
+      : [];
+
+    let matches = recipes.filter((r) => {
       if (filter.tag && !(r.tags || []).includes(filter.tag)) return false;
+      if (filter.mode === 'ing') {
+        if (!terms.length) return true;
+        const names = (r.ingredients || []).map((i) => i.name.toLowerCase());
+        return terms.every((t) => names.some((n) => n.includes(t)));
+      }
       if (!q) return true;
       const hay = [r.title, r.description, ...(r.tags || []), ...(r.ingredients || []).map((i) => i.name)]
         .join(' ').toLowerCase();
       return hay.includes(q);
     });
+
+    // In ingredient mode, surface the leanest recipes first (fewest extra items).
+    if (filter.mode === 'ing' && terms.length) {
+      matches = matches.slice().sort((a, b) => (a.ingredients || []).length - (b.ingredients || []).length);
+    }
+
     gridWrap.innerHTML = '';
     if (!matches.length) {
       gridWrap.append(h('div', { class: 'empty' }, [
         h('div', { class: 'empty__emoji' }, '🔍'),
-        h('p', { class: 'muted' }, 'No recipes match your search.')
+        h('p', { class: 'muted' }, filter.mode === 'ing'
+          ? 'No recipes use all those ingredients.'
+          : 'No recipes match your search.')
       ]));
       return;
     }
@@ -85,6 +116,10 @@ export function recipeCard(r) {
       ])
     ])
   ]);
+}
+
+function segBtn(label, active, onClick) {
+  return h('button', { class: 'seg' + (active ? ' active' : ''), onclick: onClick }, label);
 }
 
 function chip(label, active, onClick) {
