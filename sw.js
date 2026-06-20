@@ -1,5 +1,5 @@
 // Service worker — offline-first app shell caching.
-const VERSION = 'kuri-v6';
+const VERSION = 'kuri-v7';
 const CORE = [
   './',
   './index.html',
@@ -25,7 +25,8 @@ const CORE = [
   './js/views/lists.js',
   './js/views/list.js',
   './js/views/shopping.js',
-  './js/views/importView.js'
+  './js/views/importView.js',
+  './shortcuts/Kuri%20Shopping.shortcut'
 ];
 
 self.addEventListener('install', (e) => {

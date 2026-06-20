@@ -139,7 +139,11 @@ export async function shoppingView(params, root) {
           onclick: () => navigator.clipboard?.writeText(text).then(() => toast('Copied'), () => {})
         }, '📋 Copy list'),
         h('details', { style: 'margin-top:14px' }, [
-          h('summary', { style: 'cursor:pointer;color:var(--muted);font-size:0.85rem' }, 'First time? Set up the shortcut (1 min)'),
+          h('summary', { style: 'cursor:pointer;color:var(--muted);font-size:0.85rem' }, 'First time? Set up the shortcut'),
+          h('a', { href: './shortcuts/Kuri%20Shopping.shortcut', class: 'btn btn--block', style: 'margin:10px 0 6px' }, '📲 Get the ready-made shortcut'),
+          h('p', { class: 'muted', style: 'font-size:0.8rem;margin:0 0 4px' },
+            'Opens in the Shortcuts app and must be named exactly “Kuri Shopping”. As it is unsigned, enable Settings → Shortcuts → Allow Untrusted Shortcuts first.'),
+          h('p', { class: 'muted', style: 'font-size:0.8rem;margin:8px 0 0' }, 'Or build it manually:'),
           steps
         ])
       ].filter(Boolean));
