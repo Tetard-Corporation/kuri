@@ -3,6 +3,7 @@ import { store } from '../store.js';
 import { h, toast } from '../ui.js';
 import { navigate } from '../router.js';
 import { formatQty } from '../parse.js';
+import { seasonMarker } from './recipe.js';
 
 let wakeLock = null;
 
@@ -52,7 +53,8 @@ export async function cookView({ id }, root) {
       }
       list.append(h('li', {}, [
         h('span', { class: 'ing-qty' }, [ing.qty != null ? formatQty(ing.qty) : '', ing.unit].filter(Boolean).join(' ')),
-        h('span', { class: 'grow' }, ing.name)
+        h('span', { class: 'grow' }, ing.name),
+        seasonMarker(ing.name)
       ]));
     });
   }

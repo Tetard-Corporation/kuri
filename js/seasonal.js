@@ -78,6 +78,43 @@ export function pickIdea(month, chosen = []) {
   return { ingredient: base.name, type: base.type, prep: prep.n, companions, sweet };
 }
 
+// Year-round / storable produce we never flag as out of season (also avoids the
+// "pomme de terre" → "pomme" confusion by matching the longer phrase first).
+const ALL_YEAR = ['pommes de terre', 'pomme de terre', 'patate', 'oignon', 'ail',
+  'échalote', 'carotte', 'citron', 'champignon', 'gingembre'];
+
+let PRODUCE_INDEX = null;
+function produceIndex() {
+  if (PRODUCE_INDEX) return PRODUCE_INDEX;
+  const map = new Map(); // name -> { months:Set, kind }
+  for (let m = 1; m <= 12; m++) {
+    SEASON[m].v.forEach((n) => addProduce(map, n, m, 'veg'));
+    SEASON[m].f.forEach((n) => addProduce(map, n, m, 'fruit'));
+  }
+  PRODUCE_INDEX = map;
+  return map;
+}
+function addProduce(map, name, m, kind) {
+  if (!map.has(name)) map.set(name, { months: new Set(), kind });
+  map.get(name).months.add(m);
+}
+
+// Is this ingredient a fruit/vegetable, and is it in season this month?
+// Returns { name, kind, inSeason } or null when it isn't recognised produce.
+export function produceStatus(ingredientName, month = new Date().getMonth() + 1) {
+  const norm = String(ingredientName || '').toLowerCase();
+  if (!norm) return null;
+  if (ALL_YEAR.some((p) => norm.includes(p))) return null; // staples: never flagged
+
+  const map = produceIndex();
+  let best = null;
+  for (const [name, info] of map) {
+    if (norm.includes(name) && (!best || name.length > best.name.length)) best = { name, info };
+  }
+  if (!best) return null;
+  return { name: best.name, kind: best.info.kind, inSeason: best.info.months.has(month) };
+}
+
 export function ideaTitle(idea) {
   const ing = idea.ingredient.charAt(0).toUpperCase() + idea.ingredient.slice(1);
   return `${ing} ${idea.prep}`;

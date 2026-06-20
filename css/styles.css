@@ -279,6 +279,11 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent-soft
 .ing-list li { padding: 9px 2px; border-bottom: 1px solid var(--border); display: flex; gap: 10px; }
 .ing-list li:last-child { border-bottom: none; }
 .ing-qty { color: var(--accent-dark); font-weight: 600; white-space: nowrap; }
+.season-tag {
+  align-self: center; white-space: nowrap; font-size: 0.66rem; font-weight: 600;
+  color: var(--accent-dark); background: var(--accent-soft);
+  border-radius: 999px; padding: 1px 8px;
+}
 .steps { margin: 0; padding-left: 0; list-style: none; counter-reset: step; }
 .steps li { position: relative; padding: 6px 0 16px 44px; counter-increment: step; line-height: 1.5; }
 .steps li::before {
