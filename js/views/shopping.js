@@ -135,8 +135,10 @@ export async function shoppingView(params, root) {
       const text = lines.join('\n');
       // Hand the list to a one-time "Kuri Shopping" Shortcut that adds each
       // line to Apple Reminders. This is the only reliable itemized path on iOS.
+      // Pass the list straight as the shortcut input — the older
+      // "input=text&text=…" form is ambiguous and often arrives empty.
       const scURL = 'shortcuts://run-shortcut?name=' + encodeURIComponent('Kuri Shopping') +
-        '&input=text&text=' + encodeURIComponent(text);
+        '&input=' + encodeURIComponent(text);
 
       const steps = h('ol', { style: 'margin:8px 0 0;padding-left:18px;font-size:0.85rem;line-height:1.5' }, [
         h('li', {}, 'Open the Shortcuts app and tap + to create a new shortcut.'),
