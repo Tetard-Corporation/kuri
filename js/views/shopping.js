@@ -2,6 +2,7 @@
 import { store } from '../store.js';
 import { h, setTopbar, toast, modal, confirmDialog } from '../ui.js';
 import { aggregateShopping } from '../parse.js';
+import { recipePopup } from './recipe.js';
 
 export async function shoppingView(params, root) {
   const recipes = await store.allRecipes();
@@ -59,9 +60,10 @@ export async function shoppingView(params, root) {
 
     const entries = [];
     selected.forEach((r) => {
-      (r.ingredients || []).forEach((ing) => entries.push({ ing, recipeTitle: r.title }));
+      const ref = { id: r.id, title: r.title, emoji: r.emoji };
+      (r.ingredients || []).forEach((ing) => entries.push({ ing, recipe: ref }));
     });
-    extras.forEach((name) => entries.push({ ing: { name, qty: null, unit: null, raw: name }, recipeTitle: 'Added' }));
+    extras.forEach((name) => entries.push({ ing: { name, qty: null, unit: null, raw: name }, recipe: null }));
     const items = aggregateShopping(entries);
     const remaining = items.filter((it) => !meta.checked[key(it)]).length;
 
@@ -83,7 +85,14 @@ export async function shoppingView(params, root) {
       }
       const k = key(it);
       const done = !!meta.checked[k];
-      const row = h('label', { class: 'shop-item' + (done ? ' done' : '') }, [
+      // Clickable recipe tags (kept outside the toggle label so they don't tick the item).
+      const tags = (it.recipes || []).map((rec) =>
+        h('button', { class: 'recipe-tag', title: rec.title,
+          onclick: () => recipePopup(recipeById.get(rec.id)) }, [
+          h('span', {}, rec.emoji || '🍽️'),
+          h('span', { class: 'recipe-tag__t' }, rec.title)
+        ]));
+      const main = h('label', { class: 'shop-item__main grow' }, [
         h('input', {
           type: 'checkbox', checked: done,
           onchange: async (e) => {
@@ -97,6 +106,10 @@ export async function shoppingView(params, root) {
           h('span', { class: 'shop-name' }, it.name)
         ].filter(Boolean))
       ]);
+      const row = h('div', { class: 'shop-item' + (done ? ' done' : '') }, [
+        main,
+        tags.length && h('div', { class: 'shop-tags' }, tags)
+      ].filter(Boolean));
       listEl.append(row);
     });
     root.append(listEl);

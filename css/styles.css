@@ -320,7 +320,15 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent-soft
 /* Shopping */
 .shop-item { display: flex; align-items: center; gap: 12px; padding: 12px 4px; border-bottom: 1px solid var(--border); }
 .shop-item input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--accent); flex: none; }
+.shop-item__main { display: flex; align-items: center; gap: 12px; cursor: pointer; min-width: 0; }
 .shop-item.done .shop-name { text-decoration: line-through; color: var(--muted); }
+.shop-tags { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; flex: none; max-width: 45%; }
+.recipe-tag {
+  display: inline-flex; align-items: center; gap: 4px; max-width: 130px;
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--muted);
+  border-radius: 999px; padding: 2px 9px; font-size: 0.72rem; cursor: pointer;
+}
+.recipe-tag__t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .shop-qty { color: var(--accent-dark); font-weight: 600; }
 .shop-cat { margin: 16px 0 4px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
 
