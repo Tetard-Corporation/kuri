@@ -1,24 +1,41 @@
-// "Seasonal ideas" popup: suggests recipe combinations from seasonal produce,
-// or from what the user taps that they have on hand.
+// "Ideas" popup: suggests recipe combinations either by remixing the user's own
+// recipes (when ingredients are selected) or from seasonal produce.
 import { h, modal } from './ui.js';
 import { navigate } from './router.js';
+import { store } from './store.js';
 import { getSeasonal, pickIdea, ideaTitle, monthName } from './seasonal.js';
+import { buildLibraryIdea, buildMashupDraft } from './mashup.js';
 
 export async function openIdeasPopup() {
   const month = new Date().getMonth() + 1;
   const season = getSeasonal(month);
+  const recipes = await store.allRecipes();
   const selected = new Set();
   let idea = pickIdea(month, []);
 
   const ideaEl = h('div', { class: 'ideas-idea' });
   function renderIdea() {
-    idea = pickIdea(month, [...selected]);
+    const sel = [...selected];
+    // Prefer remixing the user's own recipes when they've picked ingredients.
+    const libIdea = buildLibraryIdea(sel, recipes);
+    idea = libIdea || pickIdea(month, sel);
     ideaEl.innerHTML = '';
-    ideaEl.append(
-      h('div', { class: 'ideas-idea__label' }, selected.size ? 'With what you picked' : 'Try this'),
-      h('div', { class: 'ideas-idea__main' }, capitalize(idea.ingredient)),
-      h('div', { class: 'ideas-idea__sub' }, [idea.prep, ...idea.companions].join(' · '))
-    );
+
+    if (idea.fromLibrary) {
+      const credit = idea.sources.map((s) => s.title).join(' + ');
+      ideaEl.append(
+        h('div', { class: 'ideas-idea__label' }, '🍲 From your recipes'),
+        h('div', { class: 'ideas-idea__main' }, capitalize(idea.ingredient)),
+        h('div', { class: 'ideas-idea__sub' }, [idea.prep, ...idea.companions].filter(Boolean).join(' · ')),
+        h('div', { class: 'ideas-idea__src' }, 'Remix of ' + credit)
+      );
+    } else {
+      ideaEl.append(
+        h('div', { class: 'ideas-idea__label' }, selected.size ? 'With what you picked' : 'Try this'),
+        h('div', { class: 'ideas-idea__main' }, capitalize(idea.ingredient)),
+        h('div', { class: 'ideas-idea__sub' }, [idea.prep, ...idea.companions].join(' · '))
+      );
+    }
   }
 
   const chipFor = (name) => {
@@ -34,7 +51,7 @@ export async function openIdeasPopup() {
 
   const content = h('div', {}, [
     h('p', { class: 'muted', style: 'margin:0 0 10px;font-size:0.85rem' },
-      `In season now · ${monthName(month)}. Tap what you have, or just shuffle for inspiration.`),
+      `Pick ingredients to remix your own recipes, or just shuffle. In season · ${monthName(month)}.`),
     ideaEl,
     h('button', { class: 'btn btn--block', style: 'margin-bottom:6px', onclick: renderIdea }, '🎲 Another idea'),
     h('div', { class: 'ideas-h' }, '🥬 Vegetables in season'),
@@ -44,7 +61,7 @@ export async function openIdeasPopup() {
   ]);
 
   const result = await modal({
-    title: '💡 Seasonal ideas',
+    title: '💡 Recipe ideas',
     content,
     actions: [
       { label: 'Close', value: null },
@@ -52,16 +69,17 @@ export async function openIdeasPopup() {
     ]
   });
 
-  if (result) {
-    const draft = {
-      title: ideaTitle(result),
-      emoji: result.type === 'fruit' ? '🍑' : '🥬',
-      tags: [result.ingredient, 'de saison'],
-      description: `Idea: ${result.ingredient} ${result.prep}, with ${result.companions.join(' & ')}.`
-    };
-    sessionStorage.setItem('importDraft', JSON.stringify(draft));
-    navigate('/recipe/new/edit');
-  }
+  if (!result) return;
+  const draft = result.fromLibrary
+    ? buildMashupDraft(result)
+    : {
+        title: ideaTitle(result),
+        emoji: result.type === 'fruit' ? '🍑' : '🥬',
+        tags: [result.ingredient, 'de saison'],
+        description: `Idea: ${result.ingredient} ${result.prep}, with ${result.companions.join(' & ')}.`
+      };
+  sessionStorage.setItem('importDraft', JSON.stringify(draft));
+  navigate('/recipe/new/edit');
 }
 
 function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
