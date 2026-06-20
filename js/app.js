@@ -10,12 +10,14 @@ import { listsView } from './views/lists.js';
 import { listView } from './views/list.js';
 import { shoppingView } from './views/shopping.js';
 import { importView } from './views/importView.js';
+import { planView } from './ideas.js';
 
 route('/recipes', recipesView);
 route('/recipe/new/edit', (_p, root) => editView({ id: 'new' }, root));
 route('/recipe/:id/edit', editView);
 route('/recipe/:id', recipeView);
 route('/cook/:id', cookView);
+route('/plan', planView);
 route('/lists', listsView);
 route('/favorites', (_p, root) => listView({ fav: true }, root));
 route('/list/:id', listView);

@@ -341,11 +341,13 @@ function isNoise(line) {
 // Aggregate ingredients across recipes into a merged shopping list.
 export function aggregateShopping(entries) {
   // entries: [{ ing, recipeTitle }]
-  const groups = new Map(); // key: normalizedName -> { name, units: Map(unit-> qty), noQty: count, raw:[], recipes:Set }
+  const groups = new Map(); // key: ingredientKey -> { name, units, recipes }
   for (const { ing, recipeTitle } of entries) {
-    const key = normalizeName(ing.name);
+    const key = ingredientKey(ing.name) || ing.name.toLowerCase().trim();
     if (!groups.has(key)) {
-      groups.set(key, { name: ing.name, units: new Map(), plain: [], recipes: new Set() });
+      // Display a clean, merged label (e.g. "oignon rouge finement haché" → "Oignon rouge").
+      const label = ingredientKey(ing.name) ? capitalizeWords(key) : ing.name;
+      groups.set(key, { name: label, units: new Map(), plain: [], recipes: new Set() });
     }
     const g = groups.get(key);
     g.recipes.add(recipeTitle);
@@ -374,20 +376,54 @@ export function aggregateShopping(entries) {
   return items;
 }
 
-function normalizeName(name) {
-  return name.toLowerCase().trim()
-    .replace(/[.,()]/g, '')
-    .replace(/\b(fresh|chopped|sliced|diced|minced|ground|large|small|medium|to taste|finely|roughly)\b/g, '')
-    .replace(/s\b/, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+function capitalizeWords(s) {
+  return String(s).replace(/^\p{L}/u, (c) => c.toUpperCase());
 }
 
+// Words that describe an ingredient's form/prep/size/colour but not its identity,
+// stripped so the same ingredient written differently maps to one shopping line.
+const KEY_STOP = new Set((
+  // French prep / cut
+  'haché hachée hachés hachées émincé émincée émincés émincées ciselé ciselée ciselés ciselées ' +
+  'râpé râpée râpés râpées coupé coupée coupés coupées pelé pelée pelés pelées épluché épluchée épluchés épluchées ' +
+  'écrasé écrasée écrasés écrasées moulu moulue moulus moulues paré parée parés parées dénoyauté dénoyautée dénoyautées ' +
+  'écossé écossée écossés écossées effeuillé concassé concassée concassées tranché émietté dégermé dégermée dégermés dégermées ' +
+  // French form / state / size / colour
+  'frais fraîche fraîches sec sèche séché séchée séchés séchées surgelé surgelée surgelés surgelées conserve entier entière entiers entières ' +
+  'mûr mûre mûres cuit cuite cuits cuites cru crue grillé grillée frit frite ' +
+  'finement grossièrement moyen moyenne moyens moyennes petit petite petits petites gros grosse grosses mini ' +
+  'rouge rouges jaune jaunes vert verte verts vertes blanc blanche blanches noir noire ' +
+  // shapes / portions + derived (juice/zest merge to the fruit for shopping)
+  'morceaux morceau tranches tranche cubes dés lanières rondelles quartiers quartier moitié bâtonnets ' +
+  'jus zeste zest juice deux trois quatre cinq six demi demie demis demies allongé allongée allongés allongées rond ronde ronds rondes ' +
+  // French grammar
+  'en de du des la le les un une à au aux et ou avec sans pour bien très plus quelques de qualité bonne environ côté épaisseur largeur longueur ' +
+  // English
+  'fresh chopped sliced diced minced ground large small medium finely roughly to taste of the a an dried frozen ripe cooked raw'
+).split(/\s+/).filter(Boolean));
+
+// A normalized identity key for an ingredient (used to merge shopping duplicates
+// and to build the planner's fridge vocabulary). Keeps distinguishing nouns.
+export function ingredientKey(name) {
+  let s = String(name || '').toLowerCase();
+  s = s.replace(/\([^)]*\)/g, ' ');                                   // drop "(facultatif)"
+  s = s.replace(/\d+([.,]\d+)?/g, ' ').replace(/[½⅓⅔¼¾⅕⅖⅗⅘⅙⅛⅜⅝⅞]/g, ' ');
+  s = s.replace(/\b(cm|mm|kg|g|cl|ml|l|tbsp|tsp|cuil|soupe|café|cafe|clove|gousse|gousses)\b/g, ' ');
+  s = s.replace(/[^\p{L}\s'’-]/gu, ' ');
+  const words = s.split(/[\s'’]+/)
+    .filter((w) => w.length > 1 && !KEY_STOP.has(w) && !KEY_STOP.has(w.replace(/[sx]$/, '')))
+    .map((w) => (w.length >= 5 && !SINGULAR_S.has(w)) ? w.replace(/[sx]$/, '') : w);
+  return words.slice(0, 3).join(' ').trim();
+}
+
+// Singular words that end in -s (don't strip their trailing s).
+const SINGULAR_S = new Set(['radis', 'ananas', 'anchois', 'maïs', 'mais', 'brebis', 'souris', 'couscous', 'houmous']);
+
 const CATEGORIES = [
-  { name: 'Produce', words: ['onion', 'garlic', 'tomato', 'pepper', 'carrot', 'potato', 'lettuce', 'spinach', 'lemon', 'lime', 'apple', 'banana', 'herb', 'basil', 'cilantro', 'parsley', 'ginger', 'mushroom', 'celery', 'cucumber', 'avocado', 'leek', 'chili', 'cabbage', 'broccoli', 'zucchini', 'corn'] },
-  { name: 'Meat & Fish', words: ['chicken', 'beef', 'pork', 'lamb', 'fish', 'salmon', 'shrimp', 'bacon', 'sausage', 'turkey', 'tuna', 'ham', 'mince'] },
-  { name: 'Dairy & Eggs', words: ['milk', 'butter', 'cheese', 'cream', 'yogurt', 'egg', 'parmesan', 'mozzarella', 'feta'] },
-  { name: 'Pantry', words: ['flour', 'sugar', 'salt', 'oil', 'rice', 'pasta', 'bean', 'lentil', 'stock', 'broth', 'vinegar', 'sauce', 'spice', 'pepper', 'baking', 'yeast', 'honey', 'oat', 'bread', 'noodle', 'can', 'tomato paste'] },
+  { name: 'Produce', words: ['onion', 'oignon', 'échalote', 'garlic', 'ail', 'tomato', 'tomate', 'pepper', 'poivron', 'piment', 'carrot', 'carotte', 'potato', 'patate', 'lettuce', 'laitue', 'salade', 'spinach', 'épinard', 'lemon', 'citron', 'lime', 'apple', 'pomme', 'banana', 'herb', 'basil', 'basilic', 'cilantro', 'coriandre', 'parsley', 'persil', 'menthe', 'estragon', 'cerfeuil', 'thym', 'laurier', 'ginger', 'gingembre', 'mushroom', 'champignon', 'celery', 'céleri', 'cucumber', 'concombre', 'avocado', 'leek', 'poireau', 'chili', 'cabbage', 'chou', 'broccoli', 'brocoli', 'zucchini', 'courgette', 'aubergine', 'courge', 'potiron', 'fenouil', 'corn', 'maïs', 'mangue', 'grenade', 'fève', 'haricot', 'panais', 'betterave', 'radis', 'artichaut'] },
+  { name: 'Meat & Fish', words: ['chicken', 'poulet', 'beef', 'boeuf', 'bœuf', 'pork', 'porc', 'lamb', 'agneau', 'fish', 'poisson', 'salmon', 'saumon', 'shrimp', 'crevette', 'bacon', 'lardon', 'sausage', 'saucisse', 'turkey', 'dinde', 'tuna', 'thon', 'ham', 'jambon', 'mince'] },
+  { name: 'Dairy & Eggs', words: ['milk', 'lait', 'butter', 'beurre', 'cheese', 'fromage', 'cream', 'crème', 'yogurt', 'yaourt', 'egg', 'oeuf', 'œuf', 'parmesan', 'mozzarella', 'feta', 'ricotta', 'chèvre', 'mascarpone'] },
+  { name: 'Pantry', words: ['flour', 'farine', 'sugar', 'sucre', 'salt', 'sel', 'oil', 'huile', 'rice', 'riz', 'pasta', 'pâte', 'nouille', 'soba', 'bean', 'lentil', 'lentille', 'stock', 'broth', 'bouillon', 'vinegar', 'vinaigre', 'sauce', 'soja', 'tahini', 'spice', 'épice', 'pepper', 'poivre', 'baking', 'levure', 'yeast', 'honey', 'miel', 'oat', 'avoine', 'bread', 'pain', 'noodle', 'can', 'conserve', 'concentré', 'safran', 'curcuma', 'paprika', 'cumin', 'origan', 'mélasse', 'olive'] },
   { name: 'Other', words: [] }
 ];
 

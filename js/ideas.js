@@ -1,13 +1,15 @@
-// "Ideas / Plan" popup: an on-the-fly preparation helper. Check the ingredients
-// and preparations you have (built from your recipes, plus what's in season),
-// see which recipes you can make, build a menu, and turn it into a shopping list.
-import { h, toast } from './ui.js';
+// "Plan" tab: an on-the-fly preparation helper. Check the ingredients and
+// preparations you have (built from your recipes, plus what's in season), see
+// which recipes you can make, build a menu, and turn it into a shopping list.
+import { h, toast, setTopbar } from './ui.js';
 import { navigate } from './router.js';
 import { store } from './store.js';
 import { getSeasonal, pickIdea, ideaTitle, monthName } from './seasonal.js';
 import { buildLibraryIdea, buildMashupDraft, extractTechnique } from './mashup.js';
+import { ingredientKey } from './parse.js';
 
-export async function openIdeasPopup() {
+export async function planView(_params, root) {
+  setTopbar({ title: 'Plan', action: { label: '📚 Lists', onClick: () => navigate('/lists') } });
   const month = new Date().getMonth() + 1;
   const season = getSeasonal(month);
   const recipes = await store.allRecipes();
@@ -15,7 +17,7 @@ export async function openIdeasPopup() {
   // Pre-compute per-recipe normalized ingredient tokens and technique.
   const recIndex = recipes.map((r) => ({
     r,
-    tokens: (r.ingredients || []).map((i) => normalize(i.name)).filter(Boolean),
+    tokens: (r.ingredients || []).map((i) => ingredientKey(i.name)).filter(Boolean),
     tech: extractTechnique(r)
   }));
 
@@ -28,13 +30,12 @@ export async function openIdeasPopup() {
   // Vocabularies.
   const fridgeVocab = ingredientVocab(recipes);                 // [{ norm, label }]
   const seasonVocab = [...season.vegetables, ...season.fruits]
-    .map((n) => ({ norm: normalize(n), label: n }));
+    .map((n) => ({ norm: ingredientKey(n), label: n }));
   const prepVocab = [...new Set(recIndex.map((x) => x.tech))]
     .filter((p) => p && p !== 'à votre façon').sort();
 
   // ---- elements ----
-  const root = document.getElementById('modalRoot');
-  const finish = () => { root.innerHTML = ''; };
+  const shopBtn = h('button', { class: 'btn btn--primary btn--block', style: 'margin-top:12px', onclick: buildShopping }, '🛒 Shopping list');
 
   const search = h('input', { type: 'search', placeholder: 'Filter…', value: query,
     oninput: (e) => { query = e.target.value.toLowerCase(); renderChips(); } });
@@ -44,9 +45,8 @@ export async function openIdeasPopup() {
   const chipsBox = h('div', { class: 'chips', style: 'max-height:26vh;overflow:auto' });
   const haveSummary = h('div', { class: 'muted', style: 'font-size:0.8rem;margin:8px 0' });
   const recHeader = h('div', { class: 'ideas-h', style: 'margin-top:4px' });
-  const recBox = h('div', { class: 'list', style: 'max-height:34vh;overflow:auto' });
+  const recBox = h('div', { class: 'list' });
   const ideaRow = h('div', { style: 'margin-top:12px' });
-  const shopBtn = h('button', { class: 'btn btn--primary', onclick: buildShopping }, '🛒 Shopping list');
 
   function seg(label, id) {
     return h('button', { class: 'seg' + (tab === id ? ' active' : ''), onclick: () => { tab = id; query = ''; search.value = ''; syncTabs(); renderChips(); } }, label);
@@ -110,7 +110,7 @@ export async function openIdeasPopup() {
             x.tech !== 'à votre façon' ? ' · ' + x.tech : ''
           ].join(''))
         ]),
-        h('a', { href: `#/recipe/${r.id}`, class: 'btn btn--sm', onclick: () => finish() }, 'Open')
+        h('a', { href: `#/recipe/${r.id}`, class: 'btn btn--sm' }, 'Open')
       ]);
       recBox.append(row);
     });
@@ -139,7 +139,6 @@ export async function openIdeasPopup() {
       tags: [idea.ingredient, 'de saison'], description: `Idea: ${idea.ingredient} ${idea.prep}.`
     };
     sessionStorage.setItem('importDraft', JSON.stringify(draft));
-    finish();
     navigate('/recipe/new/edit');
   }
 
@@ -149,7 +148,6 @@ export async function openIdeasPopup() {
     cfg.recipeIds = [...menu];
     cfg.checked = {};
     await store.setMeta('shopping', cfg);
-    finish();
     navigate('/shopping');
   }
 
@@ -158,8 +156,9 @@ export async function openIdeasPopup() {
     shopBtn.disabled = !menu.size;
   }
 
-  // ---- assemble ----
-  const content = h('div', {}, [
+  // ---- assemble (full view) ----
+  root.innerHTML = '';
+  root.append(
     h('p', { class: 'muted', style: 'margin:0 0 10px;font-size:0.83rem' },
       `Plan from what you have — in season (${monthName(month)}) or from your recipes.`),
     tabsRow,
@@ -169,22 +168,10 @@ export async function openIdeasPopup() {
     h('hr', { style: 'border:none;border-top:1px solid var(--border);margin:6px 0' }),
     recHeader,
     recBox,
-    h('hr', { style: 'border:none;border-top:1px solid var(--border);margin:10px 0' }),
+    shopBtn,
+    h('hr', { style: 'border:none;border-top:1px solid var(--border);margin:14px 0 10px' }),
     ideaRow
-  ]);
-
-  const back = h('div', { class: 'modal-back', onclick: (e) => { if (e.target === back) finish(); } }, [
-    h('div', { class: 'modal' }, [
-      h('h3', {}, '💡 Ideas & menu'),
-      content,
-      h('div', { class: 'row', style: 'gap:10px;justify-content:flex-end;margin-top:14px' }, [
-        h('button', { class: 'btn btn--ghost', onclick: finish }, 'Close'),
-        shopBtn
-      ])
-    ])
-  ]);
-  root.innerHTML = '';
-  root.append(back);
+  );
 
   syncTabs(); renderChips(); renderSummary(); renderRecipes(); renderIdea(); renderFooter();
 }
@@ -196,30 +183,11 @@ function chip(label, active, onClick) {
 function hint(text) { return h('span', { class: 'muted', style: 'font-size:0.8rem' }, text); }
 function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
-const PREP_WORDS = new Set(('haché hachée hachés hachées émincé émincée émincés émincées ciselé ciselée ciselés ciselées ' +
-  'râpé râpée râpés râpées coupé coupée coupés coupées pelé pelée pelés pelées écrasé écrasée écrasés écrasées ' +
-  'moulu moulue moulus moulues frais fraîche fraîches finement grossièrement moyen moyenne moyens moyennes ' +
-  'petit petite petits petites gros grosse grosses en de du des à au aux le la les un une pour et ou avec sans ' +
-  'moitié morceaux morceau tranches tranche cubes dés lanières rondelles fine fin fines séché séchée cuit cuite cuits cuites ' +
-  'frit frite grillé grillée mûr mûre mûres bonne qualité environ côté épaisseur large largeur longueur').split(' '));
-
-// Reduce an ingredient name to a comparable "head" (drop amounts, prep words…).
-export function normalize(name) {
-  let s = String(name || '').toLowerCase();
-  s = s.replace(/\([^)]*\)/g, ' ').replace(/\d+([.,]\d+)?/g, ' ').replace(/[½⅓⅔¼¾⅕⅖⅗⅘⅙⅛⅜⅝⅞]/g, ' ');
-  s = s.replace(/\b(cm|mm|g|kg|cl|ml|l|tbsp|tsp|cuil|soupe|café|cafe|clove|gousse|gousses)\b/g, ' ');
-  s = s.replace(/[^\p{L}\s'’-]/gu, ' ');
-  const words = s.split(/[\s'’]+/)
-    .filter((w) => w.length > 1 && !PREP_WORDS.has(w) && !PREP_WORDS.has(w.replace(/s$/, '')))
-    .map((w) => w.replace(/s$/, ''));
-  return words.slice(0, 3).join(' ').trim();
-}
-
 function ingredientVocab(recipes) {
   const map = new Map(); // norm -> shortest label
   for (const r of recipes) {
     for (const ing of r.ingredients || []) {
-      const norm = normalize(ing.name);
+      const norm = ingredientKey(ing.name);
       if (!norm) continue;
       const label = capitalize(norm);
       if (!map.has(norm)) map.set(norm, label);

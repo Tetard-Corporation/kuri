@@ -4,7 +4,7 @@ import { h, setTopbar, toast, promptDialog } from '../ui.js';
 import { navigate } from '../router.js';
 
 export async function listsView(_params, root) {
-  setTopbar({ title: 'Lists', action: { label: '+ New', onClick: createList } });
+  setTopbar({ title: 'Lists', back: true, action: { label: '+ New', onClick: createList } });
 
   const [lists, recipes] = await Promise.all([store.allLists(), store.allRecipes()]);
   const recipeById = new Map(recipes.map((r) => [r.id, r]));
