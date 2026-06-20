@@ -1,8 +1,8 @@
 // Import recipes from a web URL, pasted text (e.g. Instagram caption), or a photo.
 import { h, setTopbar, toast, modal, fileToDataURL } from '../ui.js';
 import { navigate } from '../router.js';
-import { importFromUrl, ocrImage } from '../import.js';
-import { parseRecipeText, ingredientToString } from '../parse.js';
+import { importFromUrl, ocrImages } from '../import.js';
+import { parseRecipeText, parseIngredientList, splitInstructions, ingredientToString } from '../parse.js';
 import { store, blankRecipe } from '../store.js';
 import { exportData } from '../backup.js';
 import { logImportCancelled, logImportSaved, recipeSnapshot } from '../feedback.js';
@@ -27,7 +27,7 @@ export async function importView(_params, root) {
     section('📝 Paste text', 'From an Instagram caption, a note, or a message. We’ll split ingredients and steps.', [
       textForm()
     ]),
-    section('📷 From a photo', 'Snap or upload a photo of a recipe; text is read on-device (OCR).', [
+    section('📷 From photos', 'Add photos of the ingredients and the instructions separately (camera or gallery). Text is read on-device in French & English.', [
       photoForm()
     ]),
     backupSection(),
@@ -125,33 +125,83 @@ function textForm() {
 }
 
 function photoForm() {
-  // No `capture` attribute: lets the OS offer both Camera and Photo Library.
-  const file = h('input', { type: 'file', accept: 'image/*', class: 'hidden' });
-  const btn = h('button', { class: 'btn btn--primary', onclick: () => file.click() }, '📷 Take or choose photo');
-  const status = h('div', { class: 'muted', style: 'margin-top:8px;font-size:0.85rem' });
-  file.onchange = async () => {
-    const f = file.files[0];
-    if (!f) return;
-    status.innerHTML = '<span class="spinner"></span> Reading text… 0%';
-    try {
-      const dataUrl = await fileToDataURL(f, 1600, 0.9);
-      const text = await ocrImage(dataUrl, (p) => {
-        status.innerHTML = `<span class="spinner"></span> Reading text… ${Math.round(p * 100)}%`;
+  // Two buckets so the user separates ingredients from instructions; each can
+  // hold several photos (e.g. a long method over multiple pages).
+  const ingPhotos = [];
+  const stepPhotos = [];
+  const titleInput = h('input', { type: 'text', placeholder: 'Recipe name (optional)' });
+  const status = h('div', { class: 'muted', style: 'margin-top:10px;font-size:0.85rem' });
+
+  function bucket(label, arr) {
+    const gallery = h('div', { class: 'photo-gallery' });
+    const input = h('input', { type: 'file', accept: 'image/*', multiple: true, class: 'hidden' });
+    const render = () => {
+      gallery.innerHTML = '';
+      arr.forEach((src, i) => {
+        gallery.append(h('div', { class: 'photo-thumb', style: `background-image:url("${src}")` }, [
+          h('button', { class: 'photo-thumb__x', title: 'Remove',
+            onclick: () => { arr.splice(i, 1); render(); } }, '×')
+        ]));
       });
+      if (!arr.length) gallery.append(h('span', { class: 'muted', style: 'font-size:0.8rem' }, 'No photos yet'));
+    };
+    input.onchange = async () => {
+      for (const f of input.files) arr.push(await fileToDataURL(f, 1600, 0.9));
+      input.value = '';
+      render();
+    };
+    render();
+    return h('div', { class: 'photo-bucket' }, [
+      h('div', { class: 'row row--between', style: 'margin-bottom:8px' }, [
+        h('strong', {}, label),
+        h('button', { class: 'btn btn--sm', onclick: () => input.click() }, '+ Add photos')
+      ]),
+      gallery, input
+    ]);
+  }
+
+  const ingBucket = bucket('📋 Ingredients', ingPhotos);
+  const stepBucket = bucket('👨‍🍳 Instructions', stepPhotos);
+  const extractBtn = h('button', { class: 'btn btn--primary btn--block', style: 'margin-top:6px', onclick: extract },
+    '🔍 Extract recipe');
+
+  async function extract() {
+    if (!ingPhotos.length && !stepPhotos.length) { toast('Add at least one photo'); return; }
+    extractBtn.disabled = true;
+    const setStatus = (frac, i, n) =>
+      status.innerHTML = `<span class="spinner"></span> Reading photos${n > 1 ? ` (${i + 1}/${n})` : ''}… ${Math.round((frac || 0) * 100)}%`;
+    try {
+      // One OCR worker pass over all photos, then split back into the two buckets.
+      const all = [...ingPhotos, ...stepPhotos];
+      setStatus(0, 0, all.length);
+      const texts = await ocrImages(all, { onProgress: setStatus });
+      const ingredients = parseIngredientList(texts.slice(0, ingPhotos.length).join('\n'));
+      const steps = splitInstructions(texts.slice(ingPhotos.length).join('\n'));
       status.textContent = '';
-      if (!text.trim()) { toast('No text found in image'); return; }
-      const parsed = parseRecipeText(text);
-      parsed.image = dataUrl;
-      parsed.source = { type: 'photo' };
-      preview(parsed);
+      if (!ingredients.length && !steps.length) { toast('No text found in the photos'); return; }
+      preview({
+        title: titleInput.value.trim() || 'Imported recipe',
+        ingredients,
+        steps,
+        image: ingPhotos[0] || stepPhotos[0] || '',
+        source: { type: 'photo' }
+      });
     } catch (err) {
       status.textContent = '';
       toast(err.message || 'OCR failed');
       console.error(err);
+    } finally {
+      extractBtn.disabled = false;
     }
-    file.value = '';
-  };
-  return h('div', {}, [btn, file, status]);
+  }
+
+  return h('div', {}, [
+    h('div', { class: 'field' }, [h('label', {}, 'Recipe name'), titleInput]),
+    ingBucket,
+    stepBucket,
+    extractBtn,
+    status
+  ]);
 }
 
 // Show a preview, let the user save directly or open the editor to tweak.

@@ -208,27 +208,62 @@ function stripHtml(html) {
   return (main ? main.innerText || main.textContent : '').replace(/\n{3,}/g, '\n\n');
 }
 
-// OCR a photo via Tesseract.js (lazy-loaded from CDN, cached by the service worker).
+// OCR via Tesseract.js (lazy-loaded from CDN, cached by the service worker).
+const OCR_CDNS = [
+  'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
+  'https://unpkg.com/tesseract.js@5/dist/tesseract.min.js'
+];
 let tesseractPromise = null;
-function loadTesseract() {
-  if (window.Tesseract) return Promise.resolve(window.Tesseract);
-  if (tesseractPromise) return tesseractPromise;
-  tesseractPromise = new Promise((resolve, reject) => {
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
     const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    s.src = src;
     s.onload = () => resolve(window.Tesseract);
-    s.onerror = () => reject(new Error('Could not load OCR engine (offline?).'));
+    s.onerror = () => reject(new Error('load failed: ' + src));
     document.head.append(s);
   });
+}
+
+async function loadTesseract() {
+  if (window.Tesseract) return window.Tesseract;
+  if (tesseractPromise) return tesseractPromise;
+  tesseractPromise = (async () => {
+    let lastErr;
+    for (const cdn of OCR_CDNS) {
+      try { return await loadScript(cdn); } catch (e) { lastErr = e; }
+    }
+    tesseractPromise = null;
+    throw new Error('Could not load the OCR engine. Check your connection and try again.');
+  })();
   return tesseractPromise;
 }
 
-export async function ocrImage(fileOrUrl, onProgress) {
+// OCR several images in one worker. langs default to French + English for recipes.
+// onProgress(fraction, index, total) reports per-image progress.
+export async function ocrImages(images, { langs = 'eng+fra', onProgress } = {}) {
+  const list = (images || []).filter(Boolean);
+  if (!list.length) return [];
   const Tesseract = await loadTesseract();
-  const { data } = await Tesseract.recognize(fileOrUrl, 'eng', {
+  const worker = await Tesseract.createWorker(langs, 1, {
     logger: (m) => {
       if (m.status === 'recognizing text' && onProgress) onProgress(m.progress);
     }
   });
-  return data.text || '';
+  try {
+    const texts = [];
+    for (let i = 0; i < list.length; i++) {
+      onProgress && onProgress(0, i, list.length);
+      const { data } = await worker.recognize(list[i]);
+      texts.push(data.text || '');
+    }
+    return texts;
+  } finally {
+    await worker.terminate();
+  }
+}
+
+export async function ocrImage(image, onProgress) {
+  const [text] = await ocrImages([image], { onProgress: (p) => onProgress && onProgress(p) });
+  return text || '';
 }

@@ -186,6 +186,35 @@ export function formatQty(n) {
   return String(rounded);
 }
 
+// Turn a block of instruction text (e.g. OCR'd from a photo) into clean steps.
+export function splitInstructions(text) {
+  let t = String(text).replace(/\r/g, '').trim();
+  if (!t) return [];
+  const clean = (s) => s.replace(/^[-*•·–]\s*/, '').replace(/\s+/g, ' ').trim();
+
+  // 1) Explicit numbering / "Étape N" / "Step N".
+  const numbered = t
+    .split(/\n?\s*(?:\d{1,2}\s*[.)]|[ée]tape\s*\d+\s*[:.)-]?|step\s*\d+\s*[:.)-]?)\s+/i)
+    .map(clean).filter((s) => s.length > 1);
+  if (numbered.length > 1) return numbered;
+
+  // 2) Merge OCR line-wrapping: a line that continues the previous sentence.
+  const lines = t.split('\n').map((l) => l.trim()).filter(Boolean);
+  const merged = [];
+  for (const line of lines) {
+    const prev = merged[merged.length - 1];
+    if (prev && !/[.!?:]$/.test(prev) && /^[a-zàâçéèêëîïôûùü(]/.test(line)) {
+      merged[merged.length - 1] = prev + ' ' + line;
+    } else {
+      merged.push(line);
+    }
+  }
+  if (merged.length > 1) return merged.map(clean);
+
+  // 3) Single block: split on sentence boundaries.
+  return t.split(/(?<=[.!?])\s+/).map(clean).filter((s) => s.length > 1);
+}
+
 // Heuristic parser for pasted / OCR'd recipe text -> {title, ingredients[], steps[]}
 export function parseRecipeText(text) {
   const lines = String(text).split('\n').map((l) => l.replace(/\s+$/, ''));
