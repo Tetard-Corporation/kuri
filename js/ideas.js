@@ -30,7 +30,8 @@ export async function planView(_params, root) {
   // Vocabularies.
   const fridgeVocab = ingredientVocab(recipes);                 // [{ norm, label }]
   const seasonVocab = [...season.vegetables, ...season.fruits]
-    .map((n) => ({ norm: ingredientKey(n), label: n }));
+    .map((n) => ({ norm: ingredientKey(n), label: n }))
+    .filter((v) => v.norm);
   const prepVocab = [...new Set(recIndex.map((x) => x.tech))]
     .filter((p) => p && p !== 'à votre façon').sort();
 

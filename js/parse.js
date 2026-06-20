@@ -182,16 +182,24 @@ export function looksLikeJunk(line) {
   return nonSpace > 0 && letters / nonSpace < 0.45;
 }
 
+// A numeric run that may be a range: "4", "4 à 6", "4-6", "4/6".
+const RANGE = String.raw`\d{1,3}(?:\s*[àa\-–/]\s*\d{1,3})?`;
+
 // Recognise a "serves N" / "pour N personnes" line (not an ingredient).
+// Tolerates ranges ("pour 4 à 6 personnes") and a leading "environ".
 export function isServingLine(line) {
-  return /^(?:pour\s+\d{1,3}\s+(?:personnes?|pers\.?|convives?)|serves?\s+\d|(?:portions?|servings?)\s*:?\s*\d|\d{1,3}\s+(?:personnes?|portions?|servings?))\b/i.test(line);
+  const l = String(line).trim();
+  if (/^serves?\b/i.test(l)) return true;
+  if (/^(?:portions?|servings?)\s*:?\s*\d/i.test(l)) return true;
+  return new RegExp(`^(?:pour\\s+)?(?:environ\\s+)?${RANGE}\\s+(?:personnes?|pers\\.?|convives?|portions?|servings?)\\b`, 'i').test(l);
 }
 
-// Pull a servings count out of OCR'd text, if present.
+// Pull a servings count out of OCR'd text, if present (lower bound of a range).
 export function extractServings(text) {
-  const m = String(text).match(/pour\s+(\d{1,3})\s+(?:personnes?|pers|convives?)|serves?\s+(\d{1,3})|(\d{1,3})\s+(?:personnes|portions|servings)/i);
+  const re = new RegExp(`pour\\s+(?:environ\\s+)?(${RANGE})\\s+(?:personnes?|pers|convives?)|serves?\\s+(${RANGE})|(${RANGE})\\s+(?:personnes|portions|servings)`, 'i');
+  const m = String(text).match(re);
   if (!m) return null;
-  const n = parseInt(m[1] || m[2] || m[3], 10);
+  const n = parseInt((m[1] || m[2] || m[3]).match(/\d+/)[0], 10);
   return n > 0 && n < 100 ? n : null;
 }
 
@@ -338,38 +346,64 @@ function isNoise(line) {
     .test(line) || /^#\w/.test(line) || /^@\w/.test(line);
 }
 
+// Units that can be summed within a measurement family, with their base factor.
+const UNIT_FAMILY = {
+  mg: ['mass', 0.001], g: ['mass', 1], kg: ['mass', 1000],
+  ml: ['vol', 1], cl: ['vol', 10], l: ['vol', 1000]
+};
+
+// Render a summed family total in a friendly unit (1500 g → "1.5 kg", 400 ml → "40 cl").
+function formatFamily(fam, total) {
+  if (fam === 'mass') return total >= 1000 ? formatQty(total / 1000) + ' kg' : formatQty(total) + ' g';
+  if (total >= 1000) return formatQty(total / 1000) + ' l';
+  if (total >= 100 && total % 10 === 0) return formatQty(total / 10) + ' cl';
+  return formatQty(total) + ' ml';
+}
+
+// Most frequent display label for a group; ties broken by shortest (most canonical).
+function bestLabel(counts) {
+  let best = '';
+  let bestN = -1;
+  for (const [label, n] of counts) {
+    if (n > bestN || (n === bestN && label.length < best.length)) { best = label; bestN = n; }
+  }
+  return best;
+}
+
 // Aggregate ingredients across recipes into a merged shopping list.
 export function aggregateShopping(entries) {
   // entries: [{ ing, recipe?: { id, title, emoji } }]
-  const groups = new Map(); // key: ingredientKey -> { name, units, recipes:Map }
+  const groups = new Map(); // key: ingredientKey -> group
   for (const { ing, recipe } of entries) {
-    const key = ingredientKey(ing.name) || ing.name.toLowerCase().trim();
+    const key = ingredientKey(ing.name);
+    if (!key) continue; // non-food / junk (serving lines, "à votre goût"…): never listed
     if (!groups.has(key)) {
-      // Display a clean, merged label (e.g. "oignon rouge finement haché" → "Oignon rouge").
-      const label = ingredientKey(ing.name) ? capitalizeWords(key) : ing.name;
-      groups.set(key, { name: label, units: new Map(), plain: [], recipes: new Map() });
+      groups.set(key, { key, units: new Map(), fam: {}, labels: new Map(), recipes: new Map() });
     }
     const g = groups.get(key);
+    const label = ingredientLabel(ing.name) || capitalizeWords(key);
+    g.labels.set(label, (g.labels.get(label) || 0) + 1);
     if (recipe && recipe.title) g.recipes.set(recipe.id || recipe.title, recipe);
     if (ing.qty != null) {
-      const u = ing.unit || '';
-      g.units.set(u, (g.units.get(u) || 0) + ing.qty);
-    } else {
-      g.plain.push(ing.raw);
+      const u = (ing.unit || '').toLowerCase();
+      const fam = UNIT_FAMILY[u];
+      if (fam) g.fam[fam[0]] = (g.fam[fam[0]] || 0) + ing.qty * fam[1];
+      else g.units.set(u, (g.units.get(u) || 0) + ing.qty);
     }
   }
 
   const items = [];
   for (const g of groups.values()) {
     const qtyParts = [];
+    for (const fam of Object.keys(g.fam)) qtyParts.push(formatFamily(fam, g.fam[fam]));
     for (const [unit, total] of g.units.entries()) {
       qtyParts.push((formatQty(total) + (unit ? ' ' + unit : '')).trim());
     }
     items.push({
-      name: g.name,
+      name: DISPLAY[g.key] || bestLabel(g.labels) || capitalizeWords(g.key),
       qty: qtyParts.join(' + '),
       recipes: [...g.recipes.values()],
-      category: categorize(g.name)
+      category: categorize(g.key)
     });
   }
   items.sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
@@ -380,8 +414,17 @@ function capitalizeWords(s) {
   return String(s).replace(/^\p{L}/u, (c) => c.toUpperCase());
 }
 
+// Lowercase + strip accents and fold ligatures, so "Épinard", "epinard", "œuf"
+// and "oeuf" all compare equal when matching/merging ingredients.
+export function foldAccents(s) {
+  return String(s || '').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/œ/g, 'oe').replace(/æ/g, 'ae').replace(/ß/g, 'ss');
+}
+
 // Words that describe an ingredient's form/prep/size/colour but not its identity,
 // stripped so the same ingredient written differently maps to one shopping line.
+// Stored accent-folded (see foldAccents) so matching is accent-insensitive.
 const KEY_STOP = new Set((
   // French prep / cut
   'haché hachée hachés hachées émincé émincée émincés émincées ciselé ciselée ciselés ciselées ' +
@@ -392,32 +435,90 @@ const KEY_STOP = new Set((
   'frais fraîche fraîches sec sèche séché séchée séchés séchées surgelé surgelée surgelés surgelées conserve entier entière entiers entières ' +
   'mûr mûre mûres cuit cuite cuits cuites cru crue grillé grillée frit frite ' +
   'finement grossièrement moyen moyenne moyens moyennes petit petite petits petites gros grosse grosses mini ' +
+  // quality / origin (not identity)
+  'bio fermier fermière fermiers fermières maison artisanal artisanale extra vierge label nature plein air bonne premium ' +
   'rouge rouges jaune jaunes vert verte verts vertes blanc blanche blanches noir noire ' +
   // shapes / portions + derived (juice/zest merge to the fruit for shopping)
   'morceaux morceau tranches tranche cubes dés lanières rondelles quartiers quartier moitié bâtonnets ' +
   'jus zeste zest juice deux trois quatre cinq six demi demie demis demies allongé allongée allongés allongées rond ronde ronds rondes ' +
   // French grammar
   'en de du des la le les un une à au aux et ou avec sans pour bien très plus quelques de qualité bonne environ côté épaisseur largeur longueur ' +
+  'votre vos notre nos mon ma mes ton ta tes son sa ses leur leurs ' +
   // English
   'fresh chopped sliced diced minced ground large small medium finely roughly to taste of the a an dried frozen ripe cooked raw'
-).split(/\s+/).filter(Boolean));
+).split(/\s+/).filter(Boolean).map(foldAccents));
 
-// A normalized identity key for an ingredient (used to merge shopping duplicates
-// and to build the planner's fridge vocabulary). Keeps distinguishing nouns.
-export function ingredientKey(name) {
-  let s = String(name || '').toLowerCase();
+// Tokens that are never an ingredient on their own (serving counts, leftovers of
+// "à votre goût", optional markers…). If a name reduces to only these, it's dropped.
+const NON_FOOD = new Set((
+  'personne convive portion serving part facultatif optionnel option ' +
+  'gout assaisonnement decoration garniture service quantite suffisant ' +
+  'choix volonte besoin presentation accompagnement total'
+).split(/\s+/).map(foldAccents));
+
+// Singular words that end in -s (don't strip their trailing s). Accent-folded.
+const SINGULAR_S = new Set(['radis', 'ananas', 'anchois', 'maïs', 'mais', 'brebis', 'souris', 'couscous', 'houmous', 'cassis'].map(foldAccents));
+
+// Unit-ish words that may survive number-stripping; never part of an identity.
+const UNIT_WORDS = new Set('cm mm kg cl ml tbsp tsp cuil soupe cafe clove gousse oz lb cup'.split(/\s+/).map(foldAccents));
+
+// Canonical merges that plural/accent folding alone can't catch (key-form → key-form).
+const CANON = {
+  patate: 'pomme terre', pdt: 'pomme terre', 'pomme terre': 'pomme terre',
+  echalotte: 'echalote',
+  yogourt: 'yaourt', yogurt: 'yaourt',
+  'piment doux': 'poivron',
+  'sucre cassonade': 'cassonade',
+  'huile dolive': 'huile olive'
+};
+
+// Pretty display labels for some canonical keys (keys are accent-stripped).
+const DISPLAY = {
+  'pomme terre': 'Pomme de terre', 'patate douce': 'Patate douce',
+  'huile olive': "Huile d'olive", 'creme fraiche': 'Crème fraîche',
+  'creme liquide': 'Crème liquide', echalote: 'Échalote',
+  'pois chiche': 'Pois chiches', 'concentre tomate': 'Concentré de tomate',
+  'coulis tomate': 'Coulis de tomate', oeuf: 'Œufs', cafe: 'Café',
+  celeri: 'Céleri', epinard: 'Épinards', creme: 'Crème',
+  gingembre: 'Gingembre', poivron: 'Poivron'
+};
+
+// Identity words of an ingredient name, accent-folded, plural-stripped, noise removed.
+function keyWords(name) {
+  let s = foldAccents(name);
   s = s.replace(/\([^)]*\)/g, ' ');                                   // drop "(facultatif)"
   s = s.replace(/\d+([.,]\d+)?/g, ' ').replace(/[½⅓⅔¼¾⅕⅖⅗⅘⅙⅛⅜⅝⅞]/g, ' ');
-  s = s.replace(/\b(cm|mm|kg|g|cl|ml|l|tbsp|tsp|cuil|soupe|café|cafe|clove|gousse|gousses)\b/g, ' ');
   s = s.replace(/[^\p{L}\s'’-]/gu, ' ');
-  const words = s.split(/[\s'’]+/)
-    .filter((w) => w.length > 1 && !KEY_STOP.has(w) && !KEY_STOP.has(w.replace(/[sx]$/, '')))
+  const drop = (w) => UNIT_WORDS.has(w) || NON_FOOD.has(w) || NON_FOOD.has(w.replace(/[sx]$/, '')) ||
+    KEY_STOP.has(w) || KEY_STOP.has(w.replace(/[sx]$/, ''));
+  return s.split(/[\s'’-]+/)
+    .filter((w) => w.length > 1 && !drop(w))
     .map((w) => (w.length >= 5 && !SINGULAR_S.has(w)) ? w.replace(/[sx]$/, '') : w);
-  return words.slice(0, 3).join(' ').trim();
 }
 
-// Singular words that end in -s (don't strip their trailing s).
-const SINGULAR_S = new Set(['radis', 'ananas', 'anchois', 'maïs', 'mais', 'brebis', 'souris', 'couscous', 'houmous']);
+// A normalized identity key for an ingredient (used to merge shopping duplicates
+// and to build the planner's fridge vocabulary). Returns '' for non-foods.
+export function ingredientKey(name) {
+  const words = keyWords(name);
+  if (!words.length) return '';
+  const key = words.slice(0, 3).join(' ').trim();
+  return CANON[key] || key;
+}
+
+// A clean display label: preserves accents/case but drops prep/qualifier noise.
+export function ingredientLabel(name) {
+  const k = ingredientKey(name);
+  if (k && DISPLAY[k]) return DISPLAY[k];
+  let s = String(name || '').replace(/\([^)]*\)/g, ' ');
+  s = s.replace(/\d+([.,]\d+)?/g, ' ').replace(/[½⅓⅔¼¾⅕⅖⅗⅘⅙⅛⅜⅝⅞]/g, ' ');
+  s = s.replace(/[^\p{L}\s'’-]/gu, ' ').replace(/\s+/g, ' ').trim();
+  const words = s.split(/\s+/).filter((w) => {
+    const f = foldAccents(w);
+    return w.length > 1 && !UNIT_WORDS.has(f) && !KEY_STOP.has(f) && !KEY_STOP.has(f.replace(/[sx]$/, ''));
+  });
+  const out = words.slice(0, 4).join(' ');
+  return out ? out.charAt(0).toUpperCase() + out.slice(1) : (k ? capitalizeWords(k) : '');
+}
 
 const CATEGORIES = [
   { name: 'Produce', words: ['onion', 'oignon', 'échalote', 'garlic', 'ail', 'tomato', 'tomate', 'pepper', 'poivron', 'piment', 'carrot', 'carotte', 'potato', 'patate', 'lettuce', 'laitue', 'salade', 'spinach', 'épinard', 'lemon', 'citron', 'lime', 'apple', 'pomme', 'banana', 'herb', 'basil', 'basilic', 'cilantro', 'coriandre', 'parsley', 'persil', 'menthe', 'estragon', 'cerfeuil', 'thym', 'laurier', 'ginger', 'gingembre', 'mushroom', 'champignon', 'celery', 'céleri', 'cucumber', 'concombre', 'avocado', 'leek', 'poireau', 'chili', 'cabbage', 'chou', 'broccoli', 'brocoli', 'zucchini', 'courgette', 'aubergine', 'courge', 'potiron', 'fenouil', 'corn', 'maïs', 'mangue', 'grenade', 'fève', 'haricot', 'panais', 'betterave', 'radis', 'artichaut'] },
@@ -427,9 +528,11 @@ const CATEGORIES = [
   { name: 'Other', words: [] }
 ];
 
+const CATEGORIES_F = CATEGORIES.map((c) => ({ name: c.name, words: c.words.map(foldAccents) }));
+
 function categorize(name) {
-  const n = name.toLowerCase();
-  for (const cat of CATEGORIES) {
+  const n = foldAccents(name);
+  for (const cat of CATEGORIES_F) {
     if (cat.words.some((w) => n.includes(w))) return cat.name;
   }
   return 'Other';
