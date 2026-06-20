@@ -140,10 +140,12 @@ export async function shoppingView(params, root) {
         }, '📋 Copy list'),
         h('details', { style: 'margin-top:14px' }, [
           h('summary', { style: 'cursor:pointer;color:var(--muted);font-size:0.85rem' }, 'First time? Set up the shortcut'),
-          h('a', { href: './shortcuts/Kuri%20Shopping.shortcut', class: 'btn btn--block', style: 'margin:10px 0 6px' }, '📲 Get the ready-made shortcut'),
-          h('p', { class: 'muted', style: 'font-size:0.8rem;margin:0 0 4px' },
-            'Opens in the Shortcuts app and must be named exactly “Kuri Shopping”. As it is unsigned, enable Settings → Shortcuts → Allow Untrusted Shortcuts first.'),
-          h('p', { class: 'muted', style: 'font-size:0.8rem;margin:8px 0 0' }, 'Or build it manually:'),
+          h('p', { class: 'muted', style: 'font-size:0.8rem;margin:8px 0 4px' },
+            'One-time prep: enable Settings → Shortcuts → Allow Untrusted Shortcuts (run any shortcut once if the toggle is missing).'),
+          h('a', { href: './shortcuts/Kuri%20Shopping.shortcut', class: 'btn btn--block', style: 'margin:6px 0' }, '📲 Get the ready-made shortcut'),
+          h('p', { class: 'muted', style: 'font-size:0.8rem;margin:0' },
+            'Important: open Kuri in Safari — Firefox/Chrome can’t hand the file to Shortcuts. If it just downloads, open it from the Files app. It must be named exactly “Kuri Shopping”.'),
+          h('p', { class: 'muted', style: 'font-size:0.8rem;margin:12px 0 4px;font-weight:600' }, 'Or build it manually (most reliable):'),
           steps
         ])
       ].filter(Boolean));
