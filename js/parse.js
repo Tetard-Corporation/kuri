@@ -133,7 +133,7 @@ export function linesToIngredients(lines) {
     if (!line) continue;
     const header = sectionHeaderName(line);
     if (header) { section = header; continue; }
-    if (isServingLine(line) || looksLikeJunk(line)) continue; // OCR noise / serving info
+    if (isServingLine(line) || isIngredientsHeader(line) || looksLikeJunk(line)) continue; // OCR noise / serving / header
     const prev = cleaned[cleaned.length - 1];
     if (prev && prev.section === section && isContinuationLine(line)) {
       prev.text += ' ' + line;
@@ -191,7 +191,17 @@ export function isServingLine(line) {
   const l = String(line).trim();
   if (/^serves?\b/i.test(l)) return true;
   if (/^(?:portions?|servings?)\s*:?\s*\d/i.test(l)) return true;
-  return new RegExp(`^(?:pour\\s+)?(?:environ\\s+)?${RANGE}\\s+(?:personnes?|pers\\.?|convives?|portions?|servings?)\\b`, 'i').test(l);
+  const core = `(?:environ\\s+)?${RANGE}\\s+(?:personnes?|pers\\.?|convives?|portions?|servings?)`;
+  if (new RegExp(`^(?:pour\\s+)?${core}\\b`, 'i').test(l)) return true;
+  // serving phrase embedded in a short line, e.g. "Ajusté pour 1 portion."
+  if (new RegExp(`\\bpour\\s+${core}\\b`, 'i').test(l) && l.split(/\s+/).length <= 7) return true;
+  return false;
+}
+
+// An "Ingredients" / "INGRÉDIENTS — 2 personnes" header that slipped into the list.
+export function isIngredientsHeader(line) {
+  return /^ingr[ée]dients?\s*$/i.test(String(line).trim()) ||
+    /^ingr[ée]dients?\s*[:\-–—(]/i.test(String(line).trim());
 }
 
 // Pull a servings count out of OCR'd text, if present (lower bound of a range).
@@ -289,9 +299,59 @@ export function splitInstructions(text) {
   return t.split(/(?<=[.!?])\s+/).map(clean).filter(keep);
 }
 
+// Named HTML entities common in recipe pages (esp. French). Accented forms are
+// case-sensitive; generic ones (amp, nbsp…) fall back to a lowercase lookup.
+const NAMED_ENTITIES = {
+  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
+  hellip: '…', mdash: '—', ndash: '–', rsquo: '’', lsquo: '‘', ldquo: '“', rdquo: '”',
+  laquo: '«', raquo: '»', deg: '°', middot: '·', bull: '•', euro: '€', pound: '£',
+  cent: '¢', copy: '©', reg: '®', trade: '™', times: '×', divide: '÷',
+  frac12: '½', frac13: '⅓', frac14: '¼', frac34: '¾', frac23: '⅔', sup2: '²', sup3: '³',
+  agrave: 'à', Agrave: 'À', aacute: 'á', acirc: 'â', Acirc: 'Â', atilde: 'ã', auml: 'ä', Auml: 'Ä', aring: 'å', aelig: 'æ', AElig: 'Æ',
+  ccedil: 'ç', Ccedil: 'Ç',
+  egrave: 'è', Egrave: 'È', eacute: 'é', Eacute: 'É', ecirc: 'ê', Ecirc: 'Ê', euml: 'ë', Euml: 'Ë',
+  igrave: 'ì', iacute: 'í', icirc: 'î', Icirc: 'Î', iuml: 'ï', Iuml: 'Ï',
+  ntilde: 'ñ', Ntilde: 'Ñ',
+  ograve: 'ò', oacute: 'ó', ocirc: 'ô', Ocirc: 'Ô', otilde: 'õ', ouml: 'ö', Ouml: 'Ö', oslash: 'ø', oelig: 'œ', OElig: 'Œ',
+  ugrave: 'ù', Ugrave: 'Ù', uacute: 'ú', ucirc: 'û', Ucirc: 'Û', uuml: 'ü', Uuml: 'Ü',
+  yacute: 'ý', yuml: 'ÿ', szlig: 'ß'
+};
+
+// Decode numeric (&#233; / &#xE9;) and named (&eacute;) HTML entities. A trailing
+// semicolon is optional so half-mangled feeds ("sak&eacute de") still decode.
+export function decodeEntities(s) {
+  return String(s == null ? '' : s).replace(/&(#x[0-9a-f]+|#\d+|[a-zA-Z][a-zA-Z0-9]{1,9});?/g, (m, body) => {
+    if (body[0] === '#') {
+      const code = (body[1] === 'x' || body[1] === 'X') ? parseInt(body.slice(2), 16) : parseInt(body.slice(1), 10);
+      if (Number.isFinite(code) && code > 0 && code <= 0x10ffff) {
+        try { return String.fromCodePoint(code); } catch { return m; }
+      }
+      return m;
+    }
+    const v = NAMED_ENTITIES[body] ?? NAMED_ENTITIES[body.toLowerCase()];
+    return v !== undefined ? v : m;
+  });
+}
+
+// Remove HTML tags, turning block-level ones into line breaks so structure survives.
+export function stripTags(s) {
+  return String(s == null ? '' : s)
+    .replace(/<\s*(br|\/p|\/div|\/li|li|\/tr|\/h[1-6])\b[^>]*>/gi, '\n')
+    .replace(/<[^>]*>/g, '');
+}
+
+// Strip tags + decode entities + tidy whitespace, while preserving line breaks.
+export function cleanText(s) {
+  return decodeEntities(stripTags(s))
+    .replace(/[ \t ]+/g, ' ')
+    .replace(/[ \t]*\n[ \t]*/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 // Heuristic parser for pasted / OCR'd recipe text -> {title, ingredients[], steps[]}
 export function parseRecipeText(text) {
-  const lines = String(text).split('\n').map((l) => l.replace(/\s+$/, ''));
+  const lines = cleanText(text).split('\n').map((l) => l.replace(/\s+$/, ''));
   const nonEmpty = lines.map((l) => l.trim()).filter(Boolean);
   const title = nonEmpty[0] || 'Untitled recipe';
 

@@ -90,7 +90,7 @@ export function blankRecipe() {
 }
 
 // Default recipes shipped with the app. Bump SEED_VERSION when this list changes.
-const SEED_VERSION = 3;
+const SEED_VERSION = 4;
 
 const DEFAULT_RECIPES = [
   {

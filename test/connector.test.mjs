@@ -19,6 +19,7 @@ for (const file of readdirSync(fbDir).filter((f) => f.endsWith('.json'))) {
     // Text imports are clean enough that the parser should reproduce the user's
     // corrected ingredient lines exactly. (Photo imports are OCR-limited.)
     if ((e.source || {}).type !== 'text') continue;
+    if (!e.imported?.ingredients || !e.after?.ingredients) continue;
     const got = parseIngredientList(e.imported.ingredients.map((i) => i.text).join('\n')).map(ingredientToString);
     const want = e.after.ingredients.map((i) => i.text);
     if (JSON.stringify(got) === JSON.stringify(want)) {
