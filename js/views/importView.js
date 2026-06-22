@@ -3,7 +3,7 @@ import { h, setTopbar, toast, modal, fileToDataURL } from '../ui.js';
 import { navigate } from '../router.js';
 import { importFromUrl, ocrImages } from '../import.js';
 import { cropImage } from '../crop.js';
-import { parseIngredientList, splitInstructions, extractServings, ingredientToString } from '../parse.js';
+import { parseIngredientList, splitInstructions, extractServings, ingredientToString, cleanText } from '../parse.js';
 import { store, blankRecipe } from '../store.js';
 import { exportData } from '../backup.js';
 import { logImportCancelled, logImportSaved, recipeSnapshot } from '../feedback.js';
@@ -148,8 +148,8 @@ function textForm() {
   const btn = h('button', { class: 'btn btn--primary btn--block', style: 'margin-top:6px', onclick: run }, 'Add recipe');
 
   function run() {
-    const ingText = ingTa.value.trim();
-    const stepText = stepTa.value.trim();
+    const ingText = cleanText(ingTa.value);
+    const stepText = cleanText(stepTa.value);
     if (ingText.length < 3 && stepText.length < 3) { toast('Add some ingredients or steps'); return; }
     const parsed = {
       title: titleInput.value.trim() || 'Pasted recipe',

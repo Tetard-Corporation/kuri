@@ -1,6 +1,6 @@
 // Regression tests for ingredient normalization / standardization.
 // Run: node test/normalize.test.mjs
-import { ingredientKey, ingredientLabel, aggregateShopping, isServingLine, extractServings } from '../js/parse.js';
+import { ingredientKey, ingredientLabel, aggregateShopping, isServingLine, extractServings, parseIngredientList, ingredientToString, cleanText } from '../js/parse.js';
 
 let pass = 0;
 let fail = 0;
@@ -47,6 +47,19 @@ eq(byName['Farine'].qty, '1½ kg', 'mass 500 g + 1 kg -> 1.5 kg');
 eq(byName['Lait'].qty, '60 cl', 'volume 40 cl + 20 cl -> 60 cl');
 check(byName['Farine'].recipes.length === 2, 'farine from two recipes', byName['Farine'].recipes.length);
 check(!items.some((i) => /personne/i.test(i.name)), 'serving line never reaches the list', items.map((i) => i.name));
+
+// --- connector: HTML entities & tags are decoded/stripped ---
+eq(cleanText("Recette d'&oelig;ufs marin&eacute;s &agrave; la japonaise"), "Recette d'œufs marinés à la japonaise", 'entities decoded');
+eq(cleanText('sak&eacute de cuisine'), 'saké de cuisine', 'entity without semicolon');
+eq(cleanText('Faites cuire <strong>6 minutes <i>note'), 'Faites cuire 6 minutes note', 'tags stripped');
+eq(cleanText('caf&#233; &#x41;'), 'café A', 'numeric entities');
+eq(cleanText('salt & pepper, R&D'), 'salt & pepper, R&D', 'bare ampersands untouched');
+
+// --- connector: headers / serving lines never become ingredients ---
+const padlist = parseIngredientList('INGRÉDIENTS — 2 personnes\n100 g PTS\nIngrédients\nAjusté pour 1 portions.\nAil — 4 gousses').map(ingredientToString);
+check(!padlist.some((l) => /personne|^ingr|ajust/i.test(l)), 'headers & serving lines dropped from ingredients', padlist);
+check(padlist.includes('100 g PTS'), 'real ingredient kept', padlist);
+check(isServingLine('Ajusté pour 1 portions.'), 'embedded serving line', true);
 
 console.log(`normalize tests: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

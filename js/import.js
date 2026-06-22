@@ -1,5 +1,5 @@
 // Import recipes from URLs (schema.org JSON-LD), text, and photos (OCR).
-import { parseRecipeText, parseIngredient } from './parse.js';
+import { parseRecipeText, parseIngredient, cleanText } from './parse.js';
 
 // Static-site browsers can't fetch cross-origin HTML directly (CORS), so we go
 // through public read-only proxies. Jina (r.jina.ai) is reliable and CORS-enabled:
@@ -146,12 +146,13 @@ function recipeFromJsonLd(node, doc) {
   const text = (v) => (typeof v === 'string' ? v : v && v.text) || '';
   const arr = (v) => (Array.isArray(v) ? v : v == null ? [] : [v]);
 
-  const ingredients = arr(node.recipeIngredient).map((s) => parseIngredient(String(s))).filter(Boolean);
+  const ingredients = arr(node.recipeIngredient)
+    .map((s) => parseIngredient(cleanText(String(s)))).filter(Boolean);
 
   let steps = [];
   const inst = node.recipeInstructions;
   if (typeof inst === 'string') {
-    steps = inst.split(/\r?\n|(?<=\.)\s{2,}/).map((s) => s.trim()).filter(Boolean);
+    steps = cleanText(inst).split(/\r?\n|(?<=\.)\s{2,}/).map((s) => s.trim()).filter(Boolean);
   } else {
     const flat = [];
     const walk = (i) => {
@@ -162,7 +163,7 @@ function recipeFromJsonLd(node, doc) {
       });
     };
     walk(inst);
-    steps = flat.map((s) => s.trim()).filter(Boolean);
+    steps = flat.map((s) => cleanText(s)).filter(Boolean);
   }
 
   let image = '';
@@ -179,8 +180,8 @@ function recipeFromJsonLd(node, doc) {
     .slice(0, 6);
 
   return {
-    title: text(node.name) || (doc && doc.title) || 'Imported recipe',
-    description: text(node.description),
+    title: cleanText(text(node.name)) || (doc && doc.title) || 'Imported recipe',
+    description: cleanText(text(node.description)),
     image,
     servings: parseInt(arr(node.recipeYield)[0], 10) || 2,
     prepTime: isoDuration(node.prepTime),
