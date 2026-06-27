@@ -127,11 +127,18 @@ export async function recipeView({ id }, root) {
     ].filter(Boolean)),
     (r.tags || []).length && h('div', { class: 'chips', style: 'margin-bottom:14px' },
       r.tags.map((t) => h('span', { class: 'tag' }, '#' + t))),
-    h('button', {
-      class: 'btn btn--primary btn--block',
-      style: 'margin-bottom:16px;font-size:1.05rem;padding:14px',
-      onclick: () => navigate(`/cook/${r.id}`)
-    }, '👨‍🍳  Start cooking'),
+    h('div', { class: 'row', style: 'gap:10px;margin-bottom:16px' }, [
+      h('button', {
+        class: 'btn btn--primary grow',
+        style: 'font-size:1.05rem;padding:14px',
+        onclick: () => navigate(`/cook/${r.id}`)
+      }, '👨‍🍳  Start cooking'),
+      h('button', {
+        class: 'btn grow',
+        style: 'font-size:1.05rem;padding:14px',
+        onclick: () => addToShopping()
+      }, '🛒  To shopping')
+    ]),
 
     h('div', { class: 'section' }, [
       h('div', { class: 'row row--between', style: 'margin-bottom:10px' }, [
@@ -156,6 +163,25 @@ export async function recipeView({ id }, root) {
       h('button', { class: 'btn btn--sm btn--danger', onclick: () => del() }, '🗑 Delete')
     ])
   );
+
+  // Add this recipe to the shopping list at the servings currently shown.
+  async function addToShopping() {
+    const cfg = (await store.getMeta('shopping'))?.value || {};
+    cfg.recipeIds = cfg.recipeIds || [];
+    cfg.servings = cfg.servings || {};
+    const already = cfg.recipeIds.includes(r.id);
+    if (!already) cfg.recipeIds.push(r.id);
+    cfg.servings[r.id] = servings;
+    await store.setMeta('shopping', cfg);
+    const label = `${servings} ${servings > 1 ? 'parts' : 'part'}`;
+    const go = await modal({
+      title: 'Added to shopping 🛒',
+      content: h('p', { style: 'margin:0' },
+        `“${r.title}” (${label}) ${already ? 'updated in' : 'added to'} your shopping list.`),
+      actions: [{ label: 'Keep browsing', value: false }, { label: 'View list', primary: true, value: true }]
+    });
+    if (go) navigate('/shopping');
+  }
 
   async function toggleFav() {
     r.favorite = !r.favorite;

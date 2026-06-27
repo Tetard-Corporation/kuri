@@ -1,6 +1,6 @@
 // Regression tests for ingredient normalization / standardization.
 // Run: node test/normalize.test.mjs
-import { ingredientKey, ingredientLabel, aggregateShopping, isServingLine, extractServings, parseIngredientList, ingredientToString, cleanText } from '../js/parse.js';
+import { ingredientKey, ingredientLabel, aggregateShopping, isServingLine, extractServings, parseIngredientList, ingredientToString, cleanText, ingredientsInText } from '../js/parse.js';
 
 let pass = 0;
 let fail = 0;
@@ -60,6 +60,13 @@ const padlist = parseIngredientList('INGRÉDIENTS — 2 personnes\n100 g PTS\nIn
 check(!padlist.some((l) => /personne|^ingr|ajust/i.test(l)), 'headers & serving lines dropped from ingredients', padlist);
 check(padlist.includes('100 g PTS'), 'real ingredient kept', padlist);
 check(isServingLine('Ajusté pour 1 portions.'), 'embedded serving line', true);
+
+// --- cook mode: ingredients used by a step ---
+const recIngs = [{ name: 'œufs' }, { name: 'sauce soja' }, { name: 'mirin' }, { name: 'eau' }, { name: 'sucre' }];
+const used = ingredientsInText('Plongez les œufs dans l’eau bouillante, ajoutez le mirin.', recIngs).map((i) => i.name);
+check(used.includes('œufs') && used.includes('eau') && used.includes('mirin'), 'step ingredients matched', used);
+check(!used.includes('sucre'), 'unmentioned ingredient excluded', used);
+check(ingredientsInText('un peu de travail', [{ name: 'ail' }]).length === 0, 'no false-positive substring match', null);
 
 console.log(`normalize tests: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
