@@ -17,6 +17,7 @@ route('/recipe/new/edit', (_p, root) => editView({ id: 'new' }, root));
 route('/recipe/:id/edit', editView);
 route('/recipe/:id', recipeView);
 route('/cook/:id', cookView);
+route('/cook/:id/:servings', cookView);
 route('/plan', planView);
 route('/lists', listsView);
 route('/favorites', (_p, root) => listView({ fav: true }, root));

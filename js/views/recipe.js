@@ -131,7 +131,7 @@ export async function recipeView({ id }, root) {
       h('button', {
         class: 'btn btn--primary grow',
         style: 'font-size:1.05rem;padding:14px',
-        onclick: () => navigate(`/cook/${r.id}`)
+        onclick: () => navigate(`/cook/${r.id}/${servings}`)
       }, '👨‍🍳  Start cooking'),
       h('button', {
         class: 'btn grow',
