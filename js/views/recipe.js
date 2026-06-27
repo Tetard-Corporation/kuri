@@ -155,6 +155,8 @@ export async function recipeView({ id }, root) {
         : h('p', { class: 'muted' }, 'No steps yet.')
     ]),
 
+    sourceBlock(),
+
     h('div', { class: 'row wrap', style: 'gap:10px;margin-bottom:30px' }, [
       h('button', { class: 'btn btn--sm', onclick: () => toggleFav() },
         (r.favorite ? '⭐ Favorited' : '☆ Favorite')),
@@ -163,6 +165,37 @@ export async function recipeView({ id }, root) {
       h('button', { class: 'btn btn--sm btn--danger', onclick: () => del() }, '🗑 Delete')
     ])
   );
+
+  // Original import, kept so you can recover anything the parser got wrong.
+  function sourceBlock() {
+    const s = r.source;
+    if (!s || (!s.url && !s.raw && !(s.images || []).length)) return null;
+    const top = [];
+    if (s.url) {
+      top.push(h('a', { class: 'btn btn--sm', href: s.url, target: '_blank', rel: 'noopener noreferrer' },
+        '🔗 ' + (s.type === 'instagram' ? 'Original post' : 'Original page')));
+    }
+    const body = [];
+    if (top.length) body.push(h('div', { class: 'row wrap', style: 'gap:8px;margin-bottom:10px' }, top));
+    if ((s.images || []).length) {
+      body.push(h('div', { class: 'src-thumbs' },
+        s.images.map((src) => h('img', { src, loading: 'lazy', alt: 'Imported photo', onclick: () => viewImage(src) }))));
+    }
+    if (s.raw) {
+      body.push(h('details', { style: 'margin-top:10px' }, [
+        h('summary', { class: 'muted', style: 'cursor:pointer;font-size:0.85rem' }, 'Original text (raw import)'),
+        h('pre', { style: 'white-space:pre-wrap;background:var(--surface-2);padding:10px;border-radius:10px;max-height:260px;overflow:auto;font:inherit;margin:8px 0 0;font-size:0.85rem' }, s.raw)
+      ]));
+    }
+    return h('div', { class: 'section' }, [h('h2', { style: 'margin-top:0' }, 'Source'), ...body]);
+  }
+
+  function viewImage(src) {
+    modal({
+      content: h('img', { src, style: 'width:100%;border-radius:10px;display:block' }),
+      actions: [{ label: 'Close', value: null }]
+    });
+  }
 
   // Add this recipe to the shopping list at the servings currently shown.
   async function addToShopping() {

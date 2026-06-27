@@ -314,6 +314,12 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent-soft
   width: 28px; height: 28px; border-radius: 999px; flex: none; font-size: 0.8rem;
 }
 
+.src-thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
+.src-thumbs img {
+  width: 72px; height: 72px; object-fit: cover; border-radius: 10px;
+  border: 1px solid var(--border); cursor: pointer;
+}
+
 /* Cook mode */
 .cook {
   position: fixed; inset: 0; z-index: 60;
