@@ -7,10 +7,17 @@ import { seasonMarker } from './recipe.js';
 
 let wakeLock = null;
 
-export async function cookView({ id }, root) {
+export async function cookView({ id, servings }, root) {
   const r = await store.getRecipe(id);
   if (!r) { toast('Recipe not found'); navigate('/recipes'); return; }
   const steps = r.steps && r.steps.length ? r.steps : ['No steps for this recipe.'];
+
+  // Scale quantities to the servings chosen on the recipe page (defaults to base).
+  const base = r.servings || 1;
+  const chosen = Math.max(1, Math.min(99, parseInt(servings, 10) || base));
+  const factor = chosen / base;
+  const scaledIngredients = (r.ingredients || []).map((ing) =>
+    (ing.qty != null && factor !== 1) ? { ...ing, qty: ing.qty * factor } : ing);
 
   // Hide chrome while cooking.
   document.querySelector('.topbar').style.display = 'none';
@@ -31,14 +38,15 @@ export async function cookView({ id }, root) {
     h('div', { class: 'cook__top' }, [
       h('button', { class: 'cook__close', onclick: exit }, '✕'),
       h('div', { class: 'cook__progress' }, [progressBar]),
-      h('span', { class: 'muted', style: 'font-size:0.8rem;white-space:nowrap' }, r.title.slice(0, 20))
+      h('span', { class: 'muted', style: 'font-size:0.8rem;white-space:nowrap' },
+        r.title.slice(0, 18) + ` · ${chosen} ${chosen > 1 ? 'parts' : 'part'}`)
     ]),
     h('div', { class: 'cook__body' }, [stepNum, stepText, ingsBox]),
     h('div', { class: 'cook__nav' }, [prevBtn, nextBtn])
   ]);
   root.append(overlay);
 
-  const allIngs = r.ingredients || [];
+  const allIngs = scaledIngredients;
   // Ingredients each step actually uses (so you prep just what's needed, when needed).
   const stepIngs = steps.map((s) => ingredientsInText(s, allIngs));
 
