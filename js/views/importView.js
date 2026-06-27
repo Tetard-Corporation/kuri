@@ -156,7 +156,7 @@ function textForm() {
       ingredients: parseIngredientList(ingText),
       steps: splitInstructions(stepText),
       image: coverP.cover || '',
-      source: { type: 'text' }
+      source: { type: 'text', raw: [ingText, stepText].filter(Boolean).join('\n\n') }
     };
     const servings = extractServings(ingText);
     if (servings) parsed.servings = servings;
@@ -239,7 +239,8 @@ function photoForm() {
         ingredients,
         steps,
         image: coverP.cover || ingPhotos[0] || stepPhotos[0] || '',
-        source: { type: 'photo' }
+        // Keep the original photos and raw OCR text in case the parse was imperfect.
+        source: { type: 'photo', raw: texts.join('\n\n').trim(), images: all.slice(0, 8) }
       };
       if (servings) parsed.servings = servings;
       preview(parsed);

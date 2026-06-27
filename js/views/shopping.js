@@ -12,6 +12,7 @@ export async function shoppingView(params, root) {
   meta.recipeIds = (meta.recipeIds || []).filter((id) => recipeById.has(id));
   meta.checked = meta.checked || {};
   meta.extras = meta.extras || []; // raw ingredients added directly (e.g. from Plan)
+  meta.servings = meta.servings || {}; // per-recipe chosen servings (scales quantities)
 
   // Coming from a list: replace the current selection.
   if (params.source) {
@@ -50,18 +51,39 @@ export async function shoppingView(params, root) {
       return;
     }
 
-    // selected recipe + added-ingredient chips
-    if (selected.length || extras.length) {
-      root.append(h('div', { class: 'chips', style: 'margin-bottom:14px' }, [
-        ...selected.map((r) => h('span', { class: 'tag' }, (r.emoji || '') + ' ' + r.title)),
-        ...extras.map((name) => h('span', { class: 'tag' }, '🧺 ' + name))
-      ]));
+    // Selected recipes, each with a servings stepper that scales its quantities.
+    if (selected.length) {
+      root.append(h('div', { class: 'shop-recipes', style: 'margin-bottom:12px' },
+        selected.map((r) => {
+          const base = r.servings || 1;
+          const cur = servingsFor(r);
+          return h('div', { class: 'shop-recipe' }, [
+            h('button', { class: 'shop-recipe__name grow', onclick: () => recipePopup(r) },
+              `${r.emoji || '🍽️'} ${r.title}`),
+            h('div', { class: 'stepper stepper--sm' }, [
+              h('button', { onclick: () => setServings(r, cur - 1) }, '−'),
+              h('span', {}, `${cur} ${cur > 1 ? 'parts' : 'part'}`),
+              h('button', { onclick: () => setServings(r, cur + 1) }, '+')
+            ]),
+            h('button', { class: 'shop-recipe__x', title: 'Remove', onclick: () => removeRecipe(r) }, '✕')
+          ]);
+        })
+      ));
+    }
+    // Added raw ingredients (from the Plan tab).
+    if (extras.length) {
+      root.append(h('div', { class: 'chips', style: 'margin-bottom:14px' },
+        extras.map((name) => h('span', { class: 'tag' }, '🧺 ' + name))));
     }
 
     const entries = [];
     selected.forEach((r) => {
       const ref = { id: r.id, title: r.title, emoji: r.emoji };
-      (r.ingredients || []).forEach((ing) => entries.push({ ing, recipe: ref }));
+      const factor = servingsFor(r) / (r.servings || 1);
+      (r.ingredients || []).forEach((ing) => {
+        const scaled = ing.qty != null ? { ...ing, qty: ing.qty * factor } : ing;
+        entries.push({ ing: scaled, recipe: ref });
+      });
     });
     extras.forEach((name) => entries.push({ ing: { name, qty: null, unit: null, raw: name }, recipe: null }));
     const items = aggregateShopping(entries);
@@ -203,6 +225,24 @@ export async function shoppingView(params, root) {
     });
     if (!ok) return;
     meta.recipeIds = [...selected];
+    await save();
+    render();
+  }
+
+  function servingsFor(r) {
+    const v = meta.servings[r.id];
+    return v && v > 0 ? v : (r.servings || 1);
+  }
+
+  async function setServings(r, n) {
+    meta.servings[r.id] = Math.max(1, Math.min(99, n));
+    await save();
+    render();
+  }
+
+  async function removeRecipe(r) {
+    meta.recipeIds = meta.recipeIds.filter((id) => id !== r.id);
+    delete meta.servings[r.id];
     await save();
     render();
   }

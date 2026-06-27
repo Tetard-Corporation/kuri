@@ -299,6 +299,26 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent-soft
 .stepper { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
 .stepper button { border: none; background: var(--surface-2); width: 36px; height: 34px; font-size: 1.2rem; color: var(--accent); cursor: pointer; }
 .stepper span { min-width: 56px; text-align: center; font-weight: 600; }
+.stepper--sm button { width: 30px; height: 28px; font-size: 1rem; }
+.stepper--sm span { min-width: 64px; font-size: 0.82rem; font-weight: 600; }
+
+.shop-recipes { display: flex; flex-direction: column; gap: 8px; }
+.shop-recipe { display: flex; align-items: center; gap: 8px; }
+.shop-recipe__name {
+  border: none; background: none; padding: 0; text-align: left; cursor: pointer;
+  color: var(--text); font-size: 0.92rem; font-weight: 600; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.shop-recipe__x {
+  border: none; background: var(--surface-2); color: var(--muted); cursor: pointer;
+  width: 28px; height: 28px; border-radius: 999px; flex: none; font-size: 0.8rem;
+}
+
+.src-thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
+.src-thumbs img {
+  width: 72px; height: 72px; object-fit: cover; border-radius: 10px;
+  border: 1px solid var(--border); cursor: pointer;
+}
 
 /* Cook mode */
 .cook {

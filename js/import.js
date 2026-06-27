@@ -66,11 +66,18 @@ export async function importFromUrl(url) {
     const best = (ings(fromCaption) > 0 && ings(fromCaption) >= ings(fromBody)) ? fromCaption : fromBody;
     best.title = cleanSocialTitle(best.title);
     best.steps = best.steps.map((s) => s.replace(/^["“]+|["”]+$/g, '').trim()).filter(Boolean);
-    best.source = src;
+    // Keep the raw readable text so the user can recover anything the parser missed.
+    best.source = { ...src, raw: clipRaw((title ? title + '\n\n' : '') + body) };
     return best;
   }
 
   throw new Error('Could not reach the page.');
+}
+
+// Cap stored raw source text so a recipe stays a reasonable size in IndexedDB.
+function clipRaw(s) {
+  const t = String(s || '').trim();
+  return t.length > 20000 ? t.slice(0, 20000) + '\n…' : t;
 }
 
 // Read the recipe-bearing meta tags from page HTML.

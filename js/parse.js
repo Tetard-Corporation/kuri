@@ -580,6 +580,18 @@ export function ingredientLabel(name) {
   return out ? out.charAt(0).toUpperCase() + out.slice(1) : (k ? capitalizeWords(k) : '');
 }
 
+// Of a recipe's ingredients, those whose identity word(s) appear in a step's text
+// — used in cook mode to show "what you need for this step". Accent-insensitive.
+export function ingredientsInText(text, ingredients) {
+  const norm = (w) => (w.length >= 4 ? w.replace(/s$/, '') : w);
+  const words = new Set(foldAccents(text).split(/[^a-z]+/).filter((w) => w.length > 2).map(norm));
+  return (ingredients || []).filter((ing) => {
+    const kw = ingredientKey(ing.name);
+    if (!kw) return false;
+    return kw.split(' ').some((w) => w.length >= 3 && words.has(norm(w)));
+  });
+}
+
 const CATEGORIES = [
   { name: 'Produce', words: ['onion', 'oignon', 'échalote', 'garlic', 'ail', 'tomato', 'tomate', 'pepper', 'poivron', 'piment', 'carrot', 'carotte', 'potato', 'patate', 'lettuce', 'laitue', 'salade', 'spinach', 'épinard', 'lemon', 'citron', 'lime', 'apple', 'pomme', 'banana', 'herb', 'basil', 'basilic', 'cilantro', 'coriandre', 'parsley', 'persil', 'menthe', 'estragon', 'cerfeuil', 'thym', 'laurier', 'ginger', 'gingembre', 'mushroom', 'champignon', 'celery', 'céleri', 'cucumber', 'concombre', 'avocado', 'leek', 'poireau', 'chili', 'cabbage', 'chou', 'broccoli', 'brocoli', 'zucchini', 'courgette', 'aubergine', 'courge', 'potiron', 'fenouil', 'corn', 'maïs', 'mangue', 'grenade', 'fève', 'haricot', 'panais', 'betterave', 'radis', 'artichaut'] },
   { name: 'Meat & Fish', words: ['chicken', 'poulet', 'beef', 'boeuf', 'bœuf', 'pork', 'porc', 'lamb', 'agneau', 'fish', 'poisson', 'salmon', 'saumon', 'shrimp', 'crevette', 'bacon', 'lardon', 'sausage', 'saucisse', 'turkey', 'dinde', 'tuna', 'thon', 'ham', 'jambon', 'mince'] },
